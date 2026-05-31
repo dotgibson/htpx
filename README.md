@@ -75,6 +75,128 @@ Keeping Core current later is the same as every repo: from `dotfiles-core`,
 - `./bootstrap.sh --no-offensive` — base + symlinks, skip the heavy tool install
 - `./bootstrap.sh --links-only` — just (re)create symlinks
 
+# The offensive layer (Kali specifics)
+
+> This section documents what makes `dotfiles-Kali` different from every other
+> repo in the system. Everything here is the **role layer** — it does not, and
+> must not, exist in Core. (If it changes when the *operating system* changes
+> it's OS-native; if it's identical everywhere it's Core; what's left — the
+> offensive tradecraft scaffolding — is this.)
+
+Kali is not stamped from the Fedora template. It's Debian-family (apt) and is
+the only repo that carries an **offensive stage** in the zsh loader. Where every
+other repo's `.zshrc` sources `… os local`, Kali inserts one more:
+
+```
+tools → aliases → functions → fzf → bindings → plugins → op → os → offensive → local
+```
+
+`offensive` loads after `os` (so OS paths/clipboard are already resolved) and
+before `local` (so a machine-specific override still wins).
+
+---
+
+## What the layer ships
+
+| File | Role |
+|------|------|
+| `offensive/offensive.zsh` | sourced in the `offensive` stage — `HAVE_*` detection, tool ergonomics, engagement scaffolding |
+| `offensive/tmux/tmux-eng.sh` | `prefix + e` popup — fuzzy-jump to an engagement session (twin of Core's sessionizer) |
+| `install/offensive-packages.txt` | the apt tool list (installed after the OS + Core layers) |
+| `OFFENSIVE-METHODOLOGY.md` | the phase → MITRE ATT&CK → tool map behind the layer |
+
+Same discipline as Core: every alias/function touching an optional tool is
+guarded by a `HAVE_*` flag, so the file is **inert** on a box where the tool
+isn't installed instead of erroring on shell start.
+
+---
+
+## Commands
+
+| Command | What it does |
+|---------|--------------|
+| `mkengagement <name>` | scaffold a dated engagement workspace under `$ENGAGEMENTS_DIR`, seed `scope/scope.txt`, open it in `$EDITOR`, and `cd` in (sets `$ENGAGEMENT`) |
+| `eng` | fzf-jump between existing engagements; previews the scope sheet |
+| `bhce <dc> <user> <pass\|:hash> [domain]` | run NetExec's BloodHound CE collection, dropping a CE-ready zip into `loot/bloodhound/` |
+| `nmapsweep <target\|CIDR>` | conservative `-sCV` sweep, all-formats output into `./nmap/` |
+| `logshell` | record a `script(1)` transcript into the engagement's `notes/` for the audit trail |
+| `smb` / `ldap` / `winrm` | shorthands for `nxc <proto>` |
+| `seclists` | jump to `$SECLISTS_DIR` with the fzf preview stack |
+
+## tmux bindings
+
+| Binding | Popup |
+|---------|-------|
+| `prefix + f` | **projects** — Core sessionizer (unchanged) |
+| `prefix + e` | **engagements** — create-or-switch to an engagement session |
+| `prefix + w` | **everything** — Core menu, now surfaces engagements as `◆` rows when `~/engagements` exists |
+
+`prefix + e` lives here (the binding is in `os/kali.conf`, the script in
+`offensive/tmux/`, symlinked to `~/.config/tmux/scripts/tmux-eng.sh` by
+`bootstrap.sh`). `prefix + w` is **Core** but engagement-*agnostic*: the `◆`
+section only renders where an engagements dir exists, so it stays portable and
+syncs cleanly to all nine repos.
+
+---
+
+## Engagement workspace
+
+Engagement **data never lives in this repo.** It lives in `$ENGAGEMENTS_DIR`
+(default `~/engagements`), outside any git tree; the repo's paranoid
+`.gitignore` is only a backstop. `mkengagement` lays out:
+
+```
+~/engagements/<YYYYMMDD>-<slug>/
+  scope/scope.txt        ← written & opened FIRST (ROE, auth ref, window, contacts)
+  recon/  scans/  web/    exploit/  screenshots/
+  loot/{creds,hashes,bloodhound}
+  report/  notes.md
+```
+
+> Rule zero: `scope/scope.txt` is created before anything else for a reason.
+> Installing a tool is not permission to point it at anything — fill in scope,
+> in-scope/out-of-scope, the authorization reference and a "stop" contact first.
+
+---
+
+## Tooling notes that will actually bite you
+
+**CrackMapExec is gone — it's `nxc` now.** CME was archived in 2023; the
+maintained successor is **NetExec** (`nxc`), and it's the single
+highest-leverage tool in the kit — auth, enumeration, lateral movement,
+credential extraction and BloodHound collection across SMB/LDAP/WinRM/MSSQL/
+RDP/FTP/SSH in one scriptable interface. Old `cme` muscle memory just becomes
+`nxc`.
+
+**BloodHound is now BloodHound CE.** Legacy 4.x collectors don't cleanly ingest
+into Community Edition. The `bhce` helper drives nxc's `--bloodhound` module,
+which packages a CE-ready zip. Run BloodHound CE itself from its official
+docker-compose — it's a Postgres-backed web app, not an apt package.
+
+**Upstream-only tools.** A few move faster than the Kali repo or aren't packaged
+— Sliver, Havoc, Caldera, sometimes BBOT/ligolo-ng. `offensive-packages.txt`
+flags these with their install method (same pattern Core already uses for
+starship/atuin on some distros).
+
+**WSL2 is NAT'd.** A listener / reverse shell / C2 in Kali under WSL2 isn't
+reachable from your LAN until you set `networkingMode=mirrored` in the
+**Windows-side** `%UserProfile%\.wslconfig` (Win11 22H2+) — *not*
+`/etc/wsl.conf`. This bites every Responder/Sliver/Metasploit handler setup.
+
+**Debian binary renames** (handled by Core already): `bat` runs as `batcat`,
+`fd-find` installs `fdfind`. Core's `tools.zsh` resolves both, so aliases and
+config work unchanged here.
+
+---
+
+## Authorization
+
+Every tool in this layer is for **authorized engagements with written rules of
+engagement only.** The scaffolding (scope-first workspace, `logshell` audit
+trail, data kept out of the repo) exists to keep that discipline mechanical
+rather than optional. See `OFFENSIVE-METHODOLOGY.md` for the full phase → ATT&CK
+mapping and the OPSEC hygiene baked into the layer.
+
 ## Engagement workflow
 
 ```sh
