@@ -169,12 +169,14 @@ export EDITOR=nvim VISUAL=nvim
 # (core/zsh/loader.zsh -> $ZSH_CFG/loader.zsh). `offensive` is unique to this repo and
 # slots in just before local overrides. Loading the FULL Core set (ui/git/maint/update
 # were silently missing) is the fix.
-ZSH_CFG="$XDG_CONFIG_HOME/zsh"
+: "${ZDOTDIR:=$XDG_CONFIG_HOME/zsh}"
+export ZDOTDIR              # Core modules (history/options) key state off ZDOTDIR;
+ZSH_CFG="$ZDOTDIR"          # align the loader to the SAME dir so state never splits
 _CORE_MODULES=(tools ui options history aliases git functions fzf bindings plugins op maint update os offensive local)
 if [[ -r "$ZSH_CFG/loader.zsh" ]]; then
   source "$ZSH_CFG/loader.zsh"
 else
-  print -u2 -- "zshrc: loader.zsh not found — run ./bootstrap.sh (Core modules not loaded)."
+  print -u2 -- "zshrc: Core loader not found at $ZSH_CFG/loader.zsh — re-run the dotfiles bootstrap to (re)link Core."
 fi
 unset _CORE_MODULES
 ZRC
