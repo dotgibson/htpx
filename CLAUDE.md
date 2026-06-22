@@ -1,14 +1,15 @@
 # CLAUDE.md — dotfiles-Kali
 
 Project memory for Claude Code, auto-loaded every session. For the shared Core
-rules see `core/CLAUDE.md` and `core/CONTRIBUTING.md`.
+rules (the load order, the "is it Core?" test, the manifest contract) see
+`core/README.md` and `core/CONTRIBUTING.md`.
 
 ## What this repo is
 
-`dotfiles-Kali` is the **Role layer** of a ten-repo, three-layer dotfiles fleet
-(Core → OS-native → Role → Showcase): the OS-native layer for Kali (Debian-family,
-`apt`, run under WSL2) **plus** an offensive engagement layer on top. It is its
-own lineage — built directly, not stamped from the Fedora template.
+`dotfiles-Kali` is the **Role layer** of a **nine-repo dotfiles system** built on
+a three-layer model (Core → OS-native → Role): the OS-native layer for Kali
+(Debian-family, `apt`, run under WSL2) **plus** an offensive engagement layer on
+top. It is its own lineage — built directly, not stamped from the Fedora template.
 
 ## The rule that bites
 
