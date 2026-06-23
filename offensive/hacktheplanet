@@ -21,8 +21,12 @@ real. In vim, run the recorded macro (mark x, substitute, jump back):
     :%s,<hostname>,box.htb,g
     :%s,<domain>,corp.local,g
     'x
-...or just :%s them by hand. Placeholders used throughout:
+...or just :%s them by hand. These five are the recurring TARGET identifiers the
+macro is worth running for:
     <ip_address>  <hostname>  <domain>  <user>  <password>
+Other placeholders are per-command one-offs you fill inline, NOT via the macro —
+notably <your-ip> (YOUR attacker/listener IP, never the target's), plus things
+like <port>, <NThash>, <share>, <rid>/<sid>, <internal-ip>.
 
 
 Scanning
@@ -31,7 +35,7 @@ Scanning
 sudo nmap -sC -sV -oA <hostname>_1-initial <ip_address>
 sudo nmap -sC -sV -sU -oA <hostname>_2-udp <ip_address>
 sudo nmap -p- -T4 --min-rate 10000 -oA <hostname>_3-tcp-discovery <ip_address>
-sudo nmap -A -p <ports from above> -oA <hostname>_4-tcp-full-scan <ip_address>
+sudo nmap -A -p <ports> -oA <hostname>_4-tcp-full-scan <ip_address>   # <ports> = comma-separated list from the discovery scan
 
 # Fast port discovery when nmap -p- is slow:
 rustscan -a <ip_address> --ulimit 5000 -- -sC -sV
