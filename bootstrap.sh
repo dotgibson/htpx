@@ -102,6 +102,17 @@ provision(){
     # upstream requires the yazi-build orchestrator, which pulls in both binaries.
     say "yazi (cargo build from source — several minutes, output below)"; cargo install --force yazi-build || true
   fi
+  # uv — Astral's Python package/project manager (not in apt). Installs to ~/.local/bin.
+  if ! command -v uv >/dev/null && [[ ! -x "$HOME/.local/bin/uv" ]]; then
+    say "uv (installer)"; curl -LsSf https://astral.sh/uv/install.sh | sh || true
+  fi
+  # ty — Astral's fast type checker (not in apt). Prefer `uv tool install` when uv is
+  # present; fall back to the standalone installer otherwise.
+  if ! command -v ty >/dev/null && [[ ! -x "$HOME/.local/bin/ty" ]]; then
+    local uv_bin; uv_bin="$(command -v uv || echo "$HOME/.local/bin/uv")"
+    if [[ -x "$uv_bin" ]]; then say "ty (via uv tool install)"; "$uv_bin" tool install ty || true
+    else say "ty (installer)"; curl -LsSf https://astral.sh/ty/install.sh | sh || true; fi
+  fi
 
   if (( IS_WSL )); then
     say "installing /etc/wsl.conf (systemd + default user + interop)"
