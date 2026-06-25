@@ -195,6 +195,12 @@ unset _CORE_MODULES
 ZRC
   fi
 
+  # A login zsh configured the XDG way reads $ZDOTDIR/.zshrc, NOT $HOME/.zshrc. With
+  # the entry loader only at $HOME, a fresh login window keys its new-user check off the
+  # (absent) $ZDOTDIR/.zshrc and fires zsh-newuser-install before our rc ever loads.
+  # Mirror the entry into ZDOTDIR so both lookup paths resolve to the same loader.
+  link "$HOME/.zshrc" "$CONFIG/zsh/.zshrc"
+
   if command -v zsh >/dev/null; then
     local zsh_path; zsh_path="$(command -v zsh)"
     if ! getent passwd "$USER" | grep -q ":$zsh_path$"; then
