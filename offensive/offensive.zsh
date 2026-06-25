@@ -191,12 +191,14 @@ note() {
 lhost() {
   local iface="${1:-}" ip=""
   if [[ -z "$iface" ]]; then
-    for iface in tun0 tun1 tap0; do
+    for iface in tun0 tun1 tap0 wg0; do
       ip=$(ip -4 -brief addr show "$iface" 2>/dev/null | awk '{print $3}' | cut -d/ -f1)
       [[ -n "$ip" ]] && break
     done
-    [[ -z "$ip" ]] && ip=$(ip -4 -brief addr show scope global 2>/dev/null \
-                            | awk 'NR==1{print $3}' | cut -d/ -f1)
+    # Fallback: the default-route SOURCE IP (Core's idiom in functions.zsh) — picks
+    # the routable LAN address, not the first global iface (which may be a docker bridge).
+    [[ -z "$ip" ]] && ip=$(ip route get 1.1.1.1 2>/dev/null \
+                            | awk '{for(i=1;i<=NF;i++) if($i=="src"){print $(i+1);exit}}')
   else
     ip=$(ip -4 -brief addr show "$iface" 2>/dev/null | awk '{print $3}' | cut -d/ -f1)
   fi
@@ -228,7 +230,16 @@ EOF
 # Usage: rocks forward shell    |    rocks kerberoast
 rocks() {
   [[ $# -eq 0 ]] && { echo "Usage: rocks <keyword…>   (searches ippsec.rocks)"; return 1; }
-  local q; q=$(printf '%s ' "$@"); q="${q% }"; q="${q// /%20}"
+  # Percent-encode the WHOLE query — the term lands in the URL fragment, so a bare
+  # '#', '?', '&' or '%' would otherwise break it. Only unreserved chars pass through.
+  local s="$*" q="" c i
+  for (( i = 1; i <= ${#s}; i++ )); do
+    c="${s[i]}"
+    case "$c" in
+      [a-zA-Z0-9._~-]) q+="$c" ;;
+      *) q+=$(printf '%%%02X' "'$c") ;;
+    esac
+  done
   local url="https://ippsec.rocks/?#$q"
   if command -v xdg-open >/dev/null 2>&1; then xdg-open "$url" >/dev/null 2>&1
   elif command -v wslview >/dev/null 2>&1; then wslview "$url"

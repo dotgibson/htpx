@@ -28,6 +28,7 @@ import sys
 from cmd import Cmd
 
 import requests
+import urllib3  # ships as a requests dependency — always importable alongside it
 
 # ── Target wiring — EDIT THESE ────────────────────────────────────────────────
 BASE_URL = sys.argv[1] if len(sys.argv) > 1 else "http://127.0.0.1:8080"
@@ -88,7 +89,7 @@ class PseudoShell(Cmd):
 
 if __name__ == "__main__":
     # Silence the self-signed-cert warning that fires on every request via Burp.
-    requests.packages.urllib3.disable_warnings()  # type: ignore[attr-defined]
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     try:
         PseudoShell().cmdloop()
     except KeyboardInterrupt:
