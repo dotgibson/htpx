@@ -8,10 +8,10 @@ name: bootstrap
 
 on:
   pull_request:
-    paths: ['bootstrap.sh', 'core/lib/**', 'offensive/**', '.github/workflows/bootstrap.yml']
+    paths: ['bootstrap.sh', 'core/**', 'os/**', 'ssh/**', 'offensive/**', '.github/workflows/bootstrap.yml']
   push:
     branches: [main]
-    paths: ['bootstrap.sh', 'core/lib/**', 'offensive/**']
+    paths: ['bootstrap.sh', 'core/**', 'os/**', 'ssh/**', 'offensive/**', '.github/workflows/bootstrap.yml']
   workflow_dispatch:
 
 permissions:
@@ -22,5 +22,5 @@ jobs:
     uses: Gerrrt/dotfiles-core/.github/workflows/bootstrap-test.yml@main
     with:
       image: kalilinux/kali-rolling
-      prep: "apt-get update -qq && apt-get install -y -qq zsh"
+      prep: "apt-get update -qq && apt-get install -y -qq bash zsh"
       offensive: true
