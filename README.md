@@ -65,17 +65,19 @@ No mainstream tool ships attacks paired with the telemetry they trip.
 
 ## Corpus
 
-6 paired concepts + 1 unpaired recon entry (SMB enum), spanning Credential
+8 paired concepts + 1 unpaired recon entry (SMB enum), spanning Credential
 Access, Lateral Movement, and Discovery:
 
 | Attack (red) | Detection (blue) | ATT&CK |
 | --- | --- | --- |
 | Kerberoast SPNs | `4769` RC4 TGS | T1558.003 |
 | AS-REP roast | `4771` pre-auth `0x18` | T1558.004 |
+| Password spray (kerbrute) | `4625` one source, many accounts | T1110.003 |
 | DCSync | `4662` replication | T1003.006 |
 | Pass-the-hash lateral | `4624` type-3 fan-out | T1550.002 |
 | NTLM relay | `4624` workstation mismatch | T1557.001 |
 | Coerce DC (PetitPotam/printerbug) | `5145` named-pipe access | T1187 |
+| AD CS ESC1 (certipy) | `4886` SAN mismatch | T1649 |
 
 Growth is mechanical now that the drift gate exists: author the red+blue entry
 pair, mark the matching flat blocks (blue into `PURPLE-TEAM.md`; red into
