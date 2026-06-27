@@ -6,7 +6,7 @@ event_ids: [4662]
 attack:
   tactic: TA0006
   techniques: [T1003.006]
-source: PURPLE-TEAM.md §"DCSync / NTDS replication"; TrustedSec Actionable Purple Teaming (BH USA 2023)
+source: TrustedSec "Actionable Purple Teaming" (BH USA 2023)
 pair: dcsync-secretsdump
 ---
 
