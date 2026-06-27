@@ -6,7 +6,7 @@ event_ids: [4624]
 attack:
   tactic: TA0008
   techniques: [T1550.002]
-source: PURPLE-TEAM.md §"Lateral movement (one source, many hosts)"; TrustedSec Actionable Purple Teaming (BH USA 2023)
+source: TrustedSec "Actionable Purple Teaming" (BH USA 2023)
 pair: pth-lateral-nxc
 ---
 

@@ -6,7 +6,7 @@ event_ids: [4769]
 attack:
   tactic: TA0006
   techniques: [T1558.003]
-source: PURPLE-TEAM.md §"Kerberoasting"; TrustedSec Actionable Purple Teaming (BH USA 2023)
+source: TrustedSec "Actionable Purple Teaming" (BH USA 2023)
 pair: kerberoast-getuserspns
 ---
 

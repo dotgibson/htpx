@@ -49,13 +49,21 @@ follow the common Splunk add-on schema — adjust to your CIM/normalization.
 
 ### Recon / credential access
 
-**Password spray (many accounts, one source)** — `4625` failed logons:
+<!-- companion:gen password-spray-4625 -->
+**Detect password spray (4625 one source, many accounts)**
+
+The shape, not the count: one source address failing (`4625`) against many
+*distinct* accounts in a short window — the inverse of a single user who simply
+forgot their password. Counting distinct accounts per source beats a raw
+failure-rate threshold because the spray is deliberately slow.
+
 ```spl
 index=main EventCode=4625 NOT (Source_Network_Address IN ("-","127.0.0.1"))
 | eval Account=mvindex(Account_Name,1)
 | stats dc(Account) AS Accounts by host, Source_Network_Address
 | where Accounts > 10 | sort -Accounts
 ```
+<!-- companion:end password-spray-4625 -->
 
 <!-- companion:gen asrep-probing-4771 -->
 **Detect AS-REP / Kerbrute probing (4771 0x18)**
@@ -215,13 +223,21 @@ index=main EventCode IN (4720,4722)
 | table _time, host, Creator, NewAccount
 ```
 
-**AD CS cert request with a SAN that isn't the requester (ESC1/relay)** — `4886`:
+<!-- companion:gen adcs-esc1-4886 -->
+**Detect AD CS SAN abuse (4886 ESC1/relay)**
+
+The invariant of ESC1 (and relay-to-ADCS) is a certificate request whose
+subject-alternative-name names a *different* principal than the requester — pull
+the requested SAN out of the `4886` event and compare it to the `Requester`.
+
 ```spl
 index=main EventCode=4886
 | rex field=Message "SAN\s*:.*upn=(?<RequestedSAN>.+$)"
 | table _time, host, Requester, RequestedSAN
 ```
+
 Also watch `5136` writes to the `userCertificate` attribute.
+<!-- companion:end adcs-esc1-4886 -->
 
 ---
 
