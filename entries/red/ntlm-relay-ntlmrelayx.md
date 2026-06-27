@@ -2,7 +2,7 @@
 id: ntlm-relay-ntlmrelayx
 title: NTLM relay (ntlmrelayx → SMB, no signing)
 section: Poisoning & relay — Responder / ntlmrelayx
-phase: Lateral Movement
+phase: Credential Access
 attack:
   tactic: TA0006
   techniques: [T1557.001]

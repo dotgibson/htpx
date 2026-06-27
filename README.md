@@ -1,14 +1,15 @@
-# companion — structured, ATT&CK-tagged, red↔blue-paired pentest reference (MVP)
+# companion — structured, ATT&CK-tagged, red↔blue-paired pentest reference
 
-An **experiment / MVP proof**, not yet the source of truth. It restructures a
-small slice of the offensive corpus into machine-readable entries so the same
+Restructures the offensive corpus into machine-readable entries so the same
 content can be **searched, ATT&CK-tagged, target-substituted, and paired with its
 blue detection** — the shape a standalone terminal companion would take.
 
-It is **purely additive**: it does **not** touch `hacktheplanet` or
-`PURPLE-TEAM.md`. Those remain canonical. The "which file is the source of truth"
-question is deliberately deferred until this earns its place (see *Open
-decisions*).
+For the paired red↔blue **attack/detection slice it covers, the entries are the
+source of truth**: where they overlap `hacktheplanet` / `PURPLE-TEAM.md`, the flat
+files' blocks are *generated* from the entries (inside `companion:gen` markers) and
+CI rejects drift. Everything those flat files hold that *isn't* a clean paired
+attack — the tradecraft prose, dorks, multi-step chains — stays hand-authored and
+canonical there. See *Source of truth* below for the full model.
 
 ## What's here
 
