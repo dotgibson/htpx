@@ -24,8 +24,16 @@ shopt -u patsub_replacement 2>/dev/null || true
 HERE="$(cd -- "$(dirname -- "${BASH_SOURCE[0]:-$0}")" && pwd)"
 ENTRIES="$HERE/entries"
 
-# Read a scalar frontmatter field (first match) from an entry file.
-_field() { sed -n "s/^$2:[[:space:]]*//p" "$1" | head -n1; }
+# Read a scalar field from ONLY the YAML frontmatter (the first --- … --- block),
+# so a `pair:`/`title:` that appears later in the body (an example, a note) can't be
+# picked up by mistake.
+_field() {
+  awk -v k="$2" '
+    /^---[[:space:]]*$/ { n++; next }
+    n >= 2 { exit }
+    n == 1 && index($0, k ":") == 1 { sub("^" k ":[[:space:]]*", ""); print; exit }
+  ' "$1"
+}
 
 # Render a file with bat if present, else cat (bat may be batcat on Debian/Kali).
 _render() {
@@ -85,16 +93,17 @@ fill() { # stdin -> stdout, substituting {{slot}} from the named env var when se
 # extract the fenced command block(s) from the entry body, then fill slots
 cmd="$(awk '/^```/{f=!f; next} f' "$file" | fill)"
 
+# Flag any unfilled slots FIRST — before the copy + "copied" line — so a half-filled
+# command isn't pasted blind under a success message.
+if printf '%s' "$cmd" | grep -oq '{{[a-z_]*}}'; then
+  # shellcheck disable=SC2016  # $RHOST/$LHOST here are literal advice text, not expansions
+  printf '\033[33munfilled:\033[0m %s  (export $RHOST/$LHOST/... and re-run)\n' \
+    "$(printf '%s' "$cmd" | grep -o '{{[a-z_]*}}' | sort -u | tr '\n' ' ')" >&2
+fi
+
 if command -v clip >/dev/null 2>&1; then
   printf '%s' "$cmd" | clip
   printf '%s\n\n\033[2mcopied to clipboard\033[0m\n' "$cmd" >&2
 else
   printf '%s\n' "$cmd"
-fi
-
-# flag any slots we couldn't fill, so a half-filled command isn't pasted blind
-if printf '%s' "$cmd" | grep -oq '{{[a-z_]*}}'; then
-  # shellcheck disable=SC2016  # $RHOST/$LHOST here are literal advice text, not expansions
-  printf '\033[33munfilled:\033[0m %s  (export $RHOST/$LHOST/... and re-run)\n' \
-    "$(printf '%s' "$cmd" | grep -o '{{[a-z_]*}}' | sort -u | tr '\n' ' ')" >&2
 fi
