@@ -124,8 +124,9 @@ target endpoint can't change even as the coercion technique does.
 
 ```spl
 index=main EventCode=5145 Access_Mask="0x3"
+| regex Share_Name="(?i).*ipc\$$"
 | regex Relative_Target_Name="(?i)(spoolss|efsrpc|lsarpc|netlogon|lsass)"
-| table _time, host, Account_Name, Source_Address, Relative_Target_Name
+| table _time, host, Account_Name, Source_Address, Share_Name, Relative_Target_Name
 ```
 <!-- companion:end coercion-5145 -->
 
