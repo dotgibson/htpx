@@ -6,7 +6,7 @@ event_ids: [4624]
 attack:
   tactic: TA0006
   techniques: [T1557.001]
-source: PURPLE-TEAM.md §"NTLM relay"; TrustedSec Actionable Purple Teaming (BH USA 2023)
+source: TrustedSec "Actionable Purple Teaming" (BH USA 2023)
 pair: ntlm-relay-ntlmrelayx
 ---
 

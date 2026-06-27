@@ -6,7 +6,7 @@ event_ids: [5145]
 attack:
   tactic: TA0006
   techniques: [T1187]
-source: PURPLE-TEAM.md §"Coercion (PetitPotam / printerbug / Dementor)"; TrustedSec Actionable Purple Teaming (BH USA 2023)
+source: TrustedSec "Actionable Purple Teaming" (BH USA 2023)
 pair: coerce-petitpotam
 ---
 

@@ -6,7 +6,7 @@ event_ids: [4886, 5136]
 attack:
   tactic: TA0006
   techniques: [T1649]
-source: PURPLE-TEAM.md §"AD CS cert request with a SAN that isn't the requester (ESC1/relay)"; TrustedSec Actionable Purple Teaming (BH USA 2023)
+source: TrustedSec "Actionable Purple Teaming" (BH USA 2023)
 pair: adcs-esc1-certipy
 ---
 

@@ -6,7 +6,7 @@ event_ids: [4771]
 attack:
   tactic: TA0006
   techniques: [T1558.004]
-source: PURPLE-TEAM.md §"Kerbrute / AS-REP probing"; TrustedSec Actionable Purple Teaming (BH USA 2023)
+source: TrustedSec "Actionable Purple Teaming" (BH USA 2023)
 pair: asreproast-getnpusers
 ---
 
