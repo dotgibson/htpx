@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Install htpx standalone (no dotfiles required). Writes a thin wrapper script onto PATH.
-# so htpx resolves its entries/ relative to THIS checkout.
+# Install htpx standalone (no dotfiles required). Writes a thin wrapper script into ~/.local/bin (ensure it's on your PATH)
+# so htpx resolves its entries/ relative to this checkout.
 set -euo pipefail
 REPO="$(cd -- "$(dirname -- "${BASH_SOURCE[0]:-$0}")" && pwd)"
 BIN="${HOME}/.local/bin"
