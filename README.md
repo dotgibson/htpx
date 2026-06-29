@@ -1,18 +1,11 @@
-<div align="center">
-
 # ⚔️ htpx
 
-### Every attack, beside its detection.
-
-An ATT&CK-tagged, red↔blue paired corpus — browse an attack beside
-its detection, fill `{{slots}}`, clip.
+**Every attack, beside its detection.** An ATT&CK-tagged, red↔blue paired
+corpus — browse an attack beside its detection, fill `{{slots}}`, clip.
 
 `fzf` · `mitre-attack` · `purple-team`
 
-[![showcase](https://img.shields.io/badge/showcase-live-7aa2f7?style=flat-square)](https://gerrrt.github.io/dotfiles-web/)
-[![purple team](https://img.shields.io/badge/purple--team-bb9af7?style=flat-square)]()
-
-</div>
+[![showcase](https://img.shields.io/badge/showcase-live-7aa2f7?style=flat-square)](https://gerrrt.github.io/dotfiles-web/) ![purple team](https://img.shields.io/badge/purple--team-bb9af7?style=flat-square)
 
 ---
 
