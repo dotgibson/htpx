@@ -1,4 +1,15 @@
-# companion — structured, ATT&CK-tagged, red↔blue-paired pentest reference
+# ⚔️ htpx
+
+**Every attack, beside its detection.** An ATT&CK-tagged, red↔blue paired
+corpus — browse an attack beside its detection, fill `{{slots}}`, clip.
+
+`fzf` · `mitre-attack` · `purple-team`
+
+[![showcase](https://img.shields.io/badge/showcase-live-7aa2f7?style=flat-square)](https://gerrrt.github.io/dotfiles-web/) ![purple team](https://img.shields.io/badge/purple--team-bb9af7?style=flat-square)
+
+---
+
+**companion** — structured, ATT&CK-tagged, red↔blue-paired pentest reference
 
 Restructures the offensive corpus into machine-readable entries so the same
 content can be **searched, ATT&CK-tagged, target-substituted, and paired with its
