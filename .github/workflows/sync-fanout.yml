@@ -187,28 +187,30 @@ jobs:
             exit 1
           fi
 
-      - name: Configure git + fleet auth
-        if: steps.resolve.outputs.skip != 'true'
-        env:
-          FLEET_SYNC_TOKEN: ${{ secrets.FLEET_SYNC_TOKEN }}
-        run: |
-          set -euo pipefail
-          git config --global user.name "htpx sync bot"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Authenticate every github.com https fetch/clone/push with the fleet token.
-          git config --global \
-            url."https://x-access-token:${FLEET_SYNC_TOKEN}@github.com/".insteadOf \
-            "https://github.com/"
-
       - name: Sync companion into dotfiles-Kali and open a PR
         if: steps.resolve.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.FLEET_SYNC_TOKEN }}
           OWNER: ${{ github.repository_owner }}
           TAG: ${{ steps.resolve.outputs.tag }}
-          # The released htpx commit (== main tip at release time). sync-companion.sh
-          # pulls a branch, so we pass it `main`; this is what that branch points at now.
-          HTPX_REF: main
+          # Git auth + bot identity injected via STEP-SCOPED GIT_CONFIG_* (not `git
+          # config --global`), so no token is ever written to ~/.gitconfig and the
+          # scoping dies with this step — same approach as the Resolve step.
+          #   KEY_0: default github.com -> FLEET (the Kali clone, sync-branch push, PR).
+          #   KEY_1: a more-specific, .git-ANCHORED rule so htpx is read with the
+          #     built-in token (git uses the LONGEST match). Anchored to the full `.git`
+          #     URL so it can't also rewrite a same-prefix repo like `<owner>/htpx-tools`.
+          #     => FLEET_SYNC_TOKEN never needs htpx access.
+          #   KEY_2/3: the bot commit identity for the gen-views regenerate commit.
+          GIT_CONFIG_COUNT: "4"
+          GIT_CONFIG_KEY_0: "url.https://x-access-token:${{ secrets.FLEET_SYNC_TOKEN }}@github.com/.insteadOf"
+          GIT_CONFIG_VALUE_0: "https://github.com/"
+          GIT_CONFIG_KEY_1: "url.https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git.insteadOf"
+          GIT_CONFIG_VALUE_1: "https://github.com/${{ github.repository }}.git"
+          GIT_CONFIG_KEY_2: "user.name"
+          GIT_CONFIG_VALUE_2: "htpx sync bot"
+          GIT_CONFIG_KEY_3: "user.email"
+          GIT_CONFIG_VALUE_3: "41898282+github-actions[bot]@users.noreply.github.com"
         run: |
           set -euo pipefail
           kali="$GITHUB_WORKSPACE/dotfiles-Kali"
@@ -227,10 +229,15 @@ jobs:
           core_before="$(grep -E '^core_sha=' "$kali/core.lock" 2>/dev/null | cut -d= -f2 || true)"
 
           # Run KALI'S OWN consumer-side sync script inside the clone. It does the
-          # `git subtree pull --squash` of htpx + bumps companion.lock — and ONLY that.
-          # It never touches core.lock. We pass htpx's main (== the released commit).
+          # `git subtree pull --squash` of htpx + bumps companion.lock — and ONLY that;
+          # it never touches core.lock. Called with NO argument on purpose: the script
+          # derives BOTH the remote (https://github.com/<owner>/htpx.git) AND the branch
+          # (main) from companion.lock. Its positional arg is the REMOTE, not a branch —
+          # passing "main" there made it try to pull from a remote named "main". At
+          # release time htpx main == the released commit, so companion.lock pins the
+          # released sha (per the header's "pinned to the released ref" note).
           git config --global --add safe.directory "$kali"
-          "$kali/scripts/sync-companion.sh" "$HTPX_REF"
+          "$kali/scripts/sync-companion.sh"
 
           # Generated flat views (PURPLE-TEAM.md, offensive/hacktheplanet) live in KALI,
           # outside the subtree. An htpx entry change can shift their generated blocks,
