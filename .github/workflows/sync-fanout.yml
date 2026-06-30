@@ -109,6 +109,20 @@ jobs:
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           OWNER: ${{ github.repository_owner }}
           REPO: ${{ github.event.repository.name }}
+          # htpx is PRIVATE, so the git clone / ls-remote below would otherwise prompt
+          # for a username and die in CI ("could not read Username for github.com").
+          # Authenticate reads of THIS repo with the built-in GITHUB_TOKEN (scoped to
+          # htpx, contents:read — see `permissions` above; NOT FLEET_SYNC_TOKEN, which
+          # is reserved for the cross-repo writes to dotfiles-Kali later).
+          #
+          # The auth is injected as an `url.insteadOf` rewrite via GIT_CONFIG_COUNT/
+          # KEY/VALUE rather than `git config --global`, so the token is NEVER written
+          # to ~/.gitconfig on disk. These env vars are scoped to THIS step only, so
+          # there's nothing to clean up and nothing that can shadow the next step's
+          # actions/checkout auth.
+          GIT_CONFIG_COUNT: "1"
+          GIT_CONFIG_KEY_0: "url.https://x-access-token:${{ github.token }}@github.com/.insteadOf"
+          GIT_CONFIG_VALUE_0: "https://github.com/"
         run: |
           set -euo pipefail
           if [ "$EVENT" = workflow_dispatch ]; then
