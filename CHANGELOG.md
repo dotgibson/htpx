@@ -20,6 +20,8 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ## [Unreleased]
 
+## [v1.3.0] - 2026-06-30
+
 ### Fixed
 
 - `sync-fanout.yml` Resolve step: the htpx clone / `ls-remote` reads are now
