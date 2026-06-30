@@ -22,12 +22,14 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ### Fixed
 
-- `sync-fanout.yml` Resolve step now authenticates its htpx clone / `ls-remote`
-  with the built-in `GITHUB_TOKEN` (`contents: read`). They were unauthenticated,
-  so on a private htpx the fan-out died at the first clone with `could not read
-  Username for 'https://github.com'`. The rewrite is confined to that step (a trap
-  unsets it on exit) so it can't shadow the next step's `actions/checkout`;
-  `FLEET_SYNC_TOKEN` is still used only for the cross-repo writes to dotfiles-Kali.
+- `sync-fanout.yml` Resolve step: the htpx clone / `ls-remote` reads are now
+  authenticated with the built-in `GITHUB_TOKEN` (`contents: read`). They were
+  unauthenticated, so on a private htpx the fan-out died at the first clone with
+  `could not read Username for 'https://github.com'`. Auth is injected via
+  `GIT_CONFIG_COUNT`/`KEY`/`VALUE` env (an `url.insteadOf` rewrite scoped to that
+  step), so the token is never written to `~/.gitconfig` and can't shadow the next
+  step's `actions/checkout`; `FLEET_SYNC_TOKEN` stays reserved for the cross-repo
+  writes to dotfiles-Kali.
 - Release + fan-out workflows hardened (PR review): `auto-tag.sh` now fails loud
   when `--release` is requested but `gh` is absent; `auto-tag.yml` cuts
   tags/releases only from the default branch; `sync-fanout.yml` resolves and
