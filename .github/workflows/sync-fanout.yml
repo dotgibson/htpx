@@ -187,35 +187,30 @@ jobs:
             exit 1
           fi
 
-      - name: Configure git + fleet auth
-        if: steps.resolve.outputs.skip != 'true'
-        env:
-          FLEET_SYNC_TOKEN: ${{ secrets.FLEET_SYNC_TOKEN }}
-          GH_BUILTIN_TOKEN: ${{ github.token }}
-          REPO_FULL: ${{ github.repository }}
-        run: |
-          set -euo pipefail
-          git config --global user.name "htpx sync bot"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Default: authenticate every github.com https op with the FLEET token, which
-          # has read+write on dotfiles-Kali (the clone, the sync-branch push, the PR).
-          git config --global \
-            url."https://x-access-token:${FLEET_SYNC_TOKEN}@github.com/".insteadOf \
-            "https://github.com/"
-          # Exception: read THIS repo (htpx) with the built-in GITHUB_TOKEN, so
-          # FLEET_SYNC_TOKEN never needs htpx access. sync-companion.sh's `git subtree
-          # pull` reads https://github.com/<owner>/htpx.git; git uses the LONGEST-matching
-          # insteadOf, so this more-specific rule wins for htpx while Kali stays on FLEET.
-          git config --global \
-            url."https://x-access-token:${GH_BUILTIN_TOKEN}@github.com/${REPO_FULL}".insteadOf \
-            "https://github.com/${REPO_FULL}"
-
       - name: Sync companion into dotfiles-Kali and open a PR
         if: steps.resolve.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.FLEET_SYNC_TOKEN }}
           OWNER: ${{ github.repository_owner }}
           TAG: ${{ steps.resolve.outputs.tag }}
+          # Git auth + bot identity injected via STEP-SCOPED GIT_CONFIG_* (not `git
+          # config --global`), so no token is ever written to ~/.gitconfig and the
+          # scoping dies with this step — same approach as the Resolve step.
+          #   KEY_0: default github.com -> FLEET (the Kali clone, sync-branch push, PR).
+          #   KEY_1: a more-specific, .git-ANCHORED rule so htpx is read with the
+          #     built-in token (git uses the LONGEST match). Anchored to the full `.git`
+          #     URL so it can't also rewrite a same-prefix repo like `<owner>/htpx-tools`.
+          #     => FLEET_SYNC_TOKEN never needs htpx access.
+          #   KEY_2/3: the bot commit identity for the gen-views regenerate commit.
+          GIT_CONFIG_COUNT: "4"
+          GIT_CONFIG_KEY_0: "url.https://x-access-token:${{ secrets.FLEET_SYNC_TOKEN }}@github.com/.insteadOf"
+          GIT_CONFIG_VALUE_0: "https://github.com/"
+          GIT_CONFIG_KEY_1: "url.https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git.insteadOf"
+          GIT_CONFIG_VALUE_1: "https://github.com/${{ github.repository }}.git"
+          GIT_CONFIG_KEY_2: "user.name"
+          GIT_CONFIG_VALUE_2: "htpx sync bot"
+          GIT_CONFIG_KEY_3: "user.email"
+          GIT_CONFIG_VALUE_3: "41898282+github-actions[bot]@users.noreply.github.com"
         run: |
           set -euo pipefail
           kali="$GITHUB_WORKSPACE/dotfiles-Kali"
