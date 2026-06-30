@@ -20,6 +20,18 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ## [Unreleased]
 
+### Fixed
+
+- `sync-fanout.yml` Sync step: call Kali's `sync-companion.sh` with NO argument. It
+  was passed `main` as a positional, but that arg is the REMOTE (URL), not a branch —
+  so it tried to pull from a remote named `main` (`fatal: 'main' does not appear to
+  be a git repository`). The script derives both the htpx remote and the branch
+  (`main`) from `companion.lock` itself.
+- `sync-fanout.yml` auth: read htpx with the built-in `GITHUB_TOKEN` via a
+  more-specific `url.insteadOf` (longest-match wins) so the `git subtree pull` of htpx
+  works without `FLEET_SYNC_TOKEN` ever needing htpx access; `FLEET_SYNC_TOKEN` stays
+  scoped to the dotfiles-Kali clone/push/PR.
+
 ## [v1.3.0] - 2026-06-30
 
 ### Fixed
