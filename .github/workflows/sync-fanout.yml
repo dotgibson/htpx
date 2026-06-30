@@ -109,8 +109,24 @@ jobs:
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           OWNER: ${{ github.repository_owner }}
           REPO: ${{ github.event.repository.name }}
+          # The built-in token — scoped to htpx with contents:read (see `permissions`
+          # above). Enough to clone/ls-remote THIS repo; the cross-repo write to Kali
+          # uses FLEET_SYNC_TOKEN later. NOT secrets.FLEET_SYNC_TOKEN here on purpose.
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          # htpx is PRIVATE, so the git clone / ls-remote below would otherwise prompt
+          # for a username and die in CI ("could not read Username for github.com").
+          # Authenticate reads of this repo with the built-in GITHUB_TOKEN via an
+          # insteadOf rewrite, so the plain https://github.com/ URLs below just work.
+          # (The later fleet-auth step re-sets this insteadOf to FLEET_SYNC_TOKEN for
+          # the dotfiles-Kali writes — overriding this read-only config harmlessly.)
+          git config --global \
+            url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf \
+            "https://github.com/"
+          # Confine the rewrite to THIS step so it can't shadow the next step's
+          # actions/checkout auth — drop it on any exit path (skip, error, success).
+          trap 'git config --global --unset-all url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf 2>/dev/null || true' EXIT
           if [ "$EVENT" = workflow_dispatch ]; then
             tag="${INPUT_TAG:-}"
           else
