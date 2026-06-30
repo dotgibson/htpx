@@ -89,38 +89,43 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      # htpx is checked out at the released commit. On workflow_run, the triggering
-      # run's head_sha IS the commit auto-tag tagged; on dispatch we use the tag ref.
-      # Full history so we can resolve the tag the commit carries.
-      - name: Check out htpx
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.workflow_run.head_sha }}
-          fetch-depth: 0
-          path: htpx
-
-      # Resolve the released tag, and bail cleanly on anything that isn't a clean
-      # SemVer release tag (a branch build that didn't tag, a mis-trigger). On the
-      # workflow_run path the tag is whichever vX.Y.Z points at the checked-out HEAD;
-      # on dispatch it's the input verbatim.
+      # ── RESOLVE FIRST, CHECK OUT SECOND ──────────────────────────────────────
+      # Resolve (and validate) the released tag BEFORE any `actions/checkout`. A
+      # mistyped / missing-`v` workflow_dispatch input must be a CLEAN no-op, not a
+      # hard checkout failure: if we checked out `inputs.tag` raw, a bad input would
+      # blow up `actions/checkout` before this step could mark it skip=true.
+      #
+      # This step does its own minimal, unauthenticated work to determine the tag:
+      #   • workflow_run — clone htpx at the triggering run's head_sha and read the
+      #     vX.Y.Z tag pointing at HEAD (that commit is the one auto-tag.yml tagged);
+      #   • workflow_dispatch — take the input verbatim, validate it is a clean
+      #     vX.Y.Z, AND verify the tag actually EXISTS on origin (git ls-remote).
+      # Anything that isn't a clean, existing release tag → skip=true + ::notice::.
       - name: Resolve release tag
         id: resolve
         env:
           EVENT: ${{ github.event_name }}
           INPUT_TAG: ${{ github.event.inputs.tag }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
         run: |
           set -euo pipefail
           if [ "$EVENT" = workflow_dispatch ]; then
             tag="${INPUT_TAG:-}"
           else
-            # The vX.Y.Z tag pointing at the commit auto-tag.yml just tagged. A read
-            # loop (not `| head`) avoids the pipefail/SIGPIPE race under set -o pipefail.
+            # The vX.Y.Z tag pointing at the commit auto-tag.yml just tagged. Clone
+            # htpx at that head_sha (full history + tags) and read the tag locally. A
+            # read loop (not `| head`) avoids the pipefail/SIGPIPE race under pipefail.
+            git clone --no-checkout "https://github.com/${OWNER}/${REPO}.git" _resolve
+            git -C _resolve fetch --tags origin
             tag=""
             while IFS= read -r t; do
               case "$t" in
                 v[0-9]*.[0-9]*.[0-9]*) tag="$t"; break ;;
               esac
-            done < <(git -C htpx tag --points-at HEAD)
+            done < <(git -C _resolve tag --points-at "$HEAD_SHA")
+            rm -rf _resolve
           fi
           ver="${tag#v}"
           if ! printf '%s' "$ver" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
@@ -128,9 +133,28 @@ jobs:
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          # The tag string is well-formed — now confirm it actually EXISTS in the repo.
+          # On dispatch a real-but-typo'd input (e.g. a never-cut version) would
+          # otherwise sail past validation into a confusing downstream failure.
+          if [ -z "$(git ls-remote --tags "https://github.com/${OWNER}/${REPO}.git" "refs/tags/$tag")" ]; then
+            echo "::notice::tag '$tag' does not exist in ${OWNER}/${REPO} — nothing to fan out"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "skip=false" >> "$GITHUB_OUTPUT"
           echo ":: will fan out htpx $tag to dotfiles-Kali"
+
+      # htpx is checked out at the VALIDATED tag (resolve proved it is a clean,
+      # existing vX.Y.Z). Skipped on a no-op resolve so a bad dispatch input never
+      # reaches checkout. Full history so git subtree downstream has what it needs.
+      - name: Check out htpx at the released tag
+        if: steps.resolve.outputs.skip != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.resolve.outputs.tag }}
+          fetch-depth: 0
+          path: htpx
 
       # Fail early and legibly if the cross-repo token is missing — otherwise the
       # first clone/push would fail with an opaque 403.
@@ -198,8 +222,17 @@ jobs:
           # outside the subtree. An htpx entry change can shift their generated blocks,
           # which sync-companion.sh does NOT touch. Regenerate so the PR is internally
           # consistent (and Kali's companion.yml --check gate stays green on the PR).
+          # A gen-views FAILURE must ABORT this sync — NOT be swallowed. If view
+          # regeneration fails we must not commit/open a PR: the half-regenerated
+          # tree would just fail Kali's companion.yml drift gate downstream, turning
+          # a clear local error into a confusing PR-CI failure. Fail loud here.
           if [ -x "$kali/offensive/companion/gen-views.sh" ]; then
-            ( cd "$kali" && ./offensive/companion/gen-views.sh ) || true
+            if ! ( cd "$kali" && ./offensive/companion/gen-views.sh ); then
+              echo "::error::gen-views.sh failed in dotfiles-Kali — refusing to commit or open a PR for htpx ${TAG}"
+              { echo "### ❌ htpx fan-out → ${TAG} ABORTED"; echo;
+                echo "- \`gen-views.sh\` failed to regenerate the flat views; no PR opened."; } >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
             git -C "$kali" add -A
             if ! git -C "$kali" diff --cached --quiet; then
               git -C "$kali" commit -m "chore(companion): regenerate flat views for htpx ${TAG}"
@@ -212,11 +245,15 @@ jobs:
 
           summary="$RUNNER_TEMP/summary.md"; : > "$summary"
 
-          # ── Post-condition: core.lock MUST be untouched. Hard fail if it moved. ──
-          if [ "$core_before" != "$core_after" ]; then
-            echo "::error::core.lock changed ($core_before -> $core_after) — this fan-out must NEVER touch Core. Aborting."
+          # ── Post-condition: core.lock MUST be untouched — ANY diff, not just the
+          # core_sha value. A formatting or other-field change to core.lock would
+          # slip past a core_sha-only check, so compare the WHOLE file against the
+          # base branch (the committed tree on this sync branch vs origin/$default).
+          # Hard fail (no PR) if core.lock changed in any way. ──
+          if ! git -C "$kali" diff --quiet "origin/${default}" -- core.lock; then
+            echo "::error::core.lock differs from origin/${default} ($core_before -> $core_after) — this fan-out must NEVER touch Core. Aborting."
             { echo "### ❌ htpx fan-out → ${TAG} ABORTED"; echo;
-              echo "- core.lock changed (\`$core_before\` -> \`$core_after\`) — companion sync must never touch Core."; } >> "$GITHUB_STEP_SUMMARY"
+              echo "- \`core.lock\` changed vs \`origin/${default}\` (\`$core_before\` -> \`$core_after\`) — companion sync must never touch Core (ANY diff fails this gate)."; } >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
 

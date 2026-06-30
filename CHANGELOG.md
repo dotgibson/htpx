@@ -20,6 +20,15 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ## [Unreleased]
 
+### Fixed
+
+- Release + fan-out workflows hardened (PR review): `auto-tag.sh` now fails loud
+  when `--release` is requested but `gh` is absent; `auto-tag.yml` cuts
+  tags/releases only from the default branch; `sync-fanout.yml` resolves and
+  verifies the tag exists before checkout (a bad dispatch input is a clean no-op),
+  aborts the sync if `gen-views.sh` fails (no PR), and fails on ANY `core.lock`
+  diff versus the base branch — not just the `core_sha` field.
+
 ## [v1.2.0] - 2026-06-30
 
 ### Added

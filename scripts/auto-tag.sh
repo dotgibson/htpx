@@ -12,12 +12,16 @@
 # already exists — pushing main again never double-tags or re-releases.
 #
 # Robustness (learned from dotfiles-core/scripts/auto-tag.sh's fragility notes):
-#   - parse the CHANGELOG with a single awk pass; never `| head` under pipefail
-#     (the SIGPIPE on early close races the pipe status and can mask a real error);
+#   - detect the top version with `grep -m1 | grep -oE` (stops at the first heading,
+#     no `| head` under pipefail — the SIGPIPE on early close races the pipe status
+#     and can mask a real error); the Release BODY is then carved with a single awk
+#     pass over the same file;
 #   - `gh release create --verify-tag` so a Release is never cut against a tag that
 #     isn't actually on origin;
 #   - an existing Release is an idempotent no-op, but a real `create` failure exits
-#     non-zero (fail loud — never green-with-no-Release).
+#     non-zero (fail loud — never green-with-no-Release);
+#   - --release with gh missing is a HARD FAILURE (never green-with-no-Release): on a
+#     GitHub runner gh is always present, so its absence is a real misconfiguration.
 #
 # Usage:
 #   ./scripts/auto-tag.sh                 # print the version + whether it's new; touch nothing
@@ -109,8 +113,10 @@ echo "auto-tag: tagged + pushed $tag"
 ((RELEASE)) || { echo "auto-tag: --release not requested — tag stands"; exit 0; }
 
 if ! command -v gh >/dev/null 2>&1; then
-  echo "auto-tag: gh not found — tag $tag is pushed, but no Release created" >&2
-  exit 0
+  echo "auto-tag: --release requested but gh is not installed — tag $tag is pushed," >&2
+  echo "auto-tag: but no Release was created. Install gh + set GH_TOKEN, or re-run" >&2
+  echo "auto-tag: without --release. Failing loud (never green-with-no-Release)." >&2
+  exit 1
 fi
 
 # Release body = the CHANGELOG block under '## [vX.Y.Z]' up to the next '## [' heading,
