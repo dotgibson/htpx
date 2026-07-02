@@ -30,7 +30,7 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
   - `jenkins-api-token` ↔ `jenkins-api-token-audit` — mint a user API token for durable
     non-interactive access; detect `generateNewToken` (T1098).
   - `jenkins-job-backdoor` ↔ `jenkins-job-backdoor-audit` — create/reconfigure a job to
-    run attacker code on the controller + agents; detect `/createItem` / `/configSubmit`
+    run attacker code on the controller + agents; detect `/createItem` / `/job/<name>/configSubmit`
     (T1072).
 
 - **Terraform Cloud / IaC** platform (3 companion-only red↔blue pairs) — detections
