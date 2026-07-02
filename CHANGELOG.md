@@ -22,6 +22,16 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ### Added
 
+- **HashiCorp Vault** platform (3 companion-only red↔blue pairs), opening the
+  secrets-management seam — detections are Vault audit-device SPL (`product: vault`
+  on the Sigma side):
+  - `vault-secret-exfil` ↔ `vault-secret-read-audit` — bulk-read KV secrets to drain
+    the credential store; detect `read` breadth over `secret/` paths (T1555).
+  - `vault-approle-backdoor` ↔ `vault-approle-audit` — create a rogue AppRole for
+    durable machine auth; detect create/update on `auth/approle/role/` (T1098).
+  - `vault-audit-disable` ↔ `vault-audit-device-audit` — disable a Vault audit device
+    to blind the SIEM; detect `delete` on a `sys/audit/` path (T1562.001).
+
 - **GitLab CI/CD** platform (3 companion-only red↔blue pairs), mirroring the GitHub
   Actions round on GitLab audit-event telemetry (`product: gitlab`, field
   `event_type`):
@@ -57,7 +67,7 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
   - `gh-deploy-key-backdoor` ↔ `gh-cred-audit` — writable deploy key / fine-grained
     PAT for durable access; detect `repo.create_deploy_key` /
     `personal_access_token.access_granted` (T1098).
-- Corpus is now 44 paired concepts + 1 unpaired recon entry.
+- Corpus is now 47 paired concepts + 1 unpaired recon entry.
 
 ## [v1.4.0] - 2026-06-30
 
