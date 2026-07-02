@@ -22,6 +22,16 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ### Added
 
+- **Snowflake data cloud** platform (3 companion-only red↔blue pairs) — mirrors the
+  2024 Snowflake credential-attack TTPs, detected via `ACCOUNT_USAGE.QUERY_HISTORY`
+  (`product: snowflake`, `query_type`/`query_text`):
+  - `snowflake-exfil-stage` ↔ `snowflake-exfil-audit` — `COPY INTO` external stage bulk
+    unload; detect `QUERY_TYPE=UNLOAD` (T1567.002).
+  - `snowflake-rogue-user` ↔ `snowflake-user-audit` — backdoor user + ACCOUNTADMIN grant;
+    detect `CREATE_USER` / privileged `GRANT` (T1136.003).
+  - `snowflake-network-policy` ↔ `snowflake-network-policy-audit` — open/drop the IP
+    allowlist so stolen creds work anywhere; detect `NETWORK POLICY` changes (T1562.007).
+
 - **Jenkins CI/CD** platform (3 companion-only red↔blue pairs) — the self-hosted
   counterpart to the GitHub/GitLab SaaS rounds, detected via the Jenkins Audit Trail
   plugin log (`product: jenkins`, keyword/URI matches):
@@ -88,7 +98,7 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
   - `gh-deploy-key-backdoor` ↔ `gh-cred-audit` — writable deploy key / fine-grained
     PAT for durable access; detect `repo.create_deploy_key` /
     `personal_access_token.access_granted` (T1098).
-- Corpus is now 53 paired concepts + 1 unpaired recon entry.
+- Corpus is now 56 paired concepts + 1 unpaired recon entry.
 
 ## [v1.4.0] - 2026-06-30
 
