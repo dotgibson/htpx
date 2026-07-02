@@ -22,6 +22,18 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ### Added
 
+- **Harbor container registry** platform (3 companion-only red↔blue pairs), opening
+  the container-image / registry supply-chain seam — detections are Harbor
+  registry audit-log SPL (`product: harbor` on the Sigma side):
+  - `harbor-image-backdoor` ↔ `harbor-image-push-audit` — push a trojanized image
+    over a trusted tag to poison downstream pulls; detect `operation=push`
+    artifact (T1525, Implant Internal Image).
+  - `harbor-robot-backdoor` ↔ `harbor-robot-audit` — mint a long-lived robot
+    account for durable registry access; detect `operation=create`
+    `resource_type=robot` (T1098).
+  - `harbor-artifact-delete` ↔ `harbor-artifact-delete-audit` — delete the trusted
+    artifact to force a poisoned re-pull + erase evidence; detect `operation=delete`
+    artifact/repository (T1070).
 - **GitHub Actions CI/CD** platform (3 companion-only red↔blue pairs), opening a
   new logsource the way the Okta round did — detections are GitHub Enterprise
   audit-log SPL (`product: github` on the Sigma side):
@@ -33,7 +45,7 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
   - `gh-deploy-key-backdoor` ↔ `gh-cred-audit` — writable deploy key / fine-grained
     PAT for durable access; detect `repo.create_deploy_key` /
     `personal_access_token.access_granted` (T1098).
-- Corpus is now 38 paired concepts + 1 unpaired recon entry.
+- Corpus is now 41 paired concepts + 1 unpaired recon entry.
 
 ## [v1.4.0] - 2026-06-30
 
