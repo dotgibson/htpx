@@ -22,6 +22,16 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ### Added
 
+- **Terraform Cloud / IaC** platform (3 companion-only red↔blue pairs) — detections
+  are Terraform Cloud audit-trail SPL (`product: terraform`, nested `resource.type` /
+  `resource.action`):
+  - `tfc-agent-hijack` ↔ `tfc-agent-audit` — rogue agent pool routes plans/applies to
+    attacker infra (captures cloud creds + state); detect `agent_pool` `create` (T1543).
+  - `tfc-token-backdoor` ↔ `tfc-token-audit` — mint an org/team API token for durable
+    API + state access; detect `authentication_token` `create` (T1098).
+  - `tfc-var-injection` ↔ `tfc-var-audit` — inject a workspace env variable to run code
+    / exfil at apply; detect `variable` `create`/`update` (T1072).
+
 - **HashiCorp Vault** platform (3 companion-only red↔blue pairs), opening the
   secrets-management seam — detections are Vault audit-device SPL (`product: vault`
   on the Sigma side):
@@ -67,7 +77,7 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
   - `gh-deploy-key-backdoor` ↔ `gh-cred-audit` — writable deploy key / fine-grained
     PAT for durable access; detect `repo.create_deploy_key` /
     `personal_access_token.access_granted` (T1098).
-- Corpus is now 47 paired concepts + 1 unpaired recon entry.
+- Corpus is now 50 paired concepts + 1 unpaired recon entry.
 
 ## [v1.4.0] - 2026-06-30
 
