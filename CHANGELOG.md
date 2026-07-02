@@ -22,6 +22,16 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ### Added
 
+- **Cloudflare edge** platform (3 companion-only red↔blue pairs) — detections over the
+  Cloudflare account audit log (`product: cloudflare`, fields `action.type`/`resource.type`):
+  - `cf-api-token` ↔ `cf-api-token-audit` — mint a long-lived API token for durable
+    control-plane access after account compromise; detect `resource.type=api_token`
+    `action.type=create` (T1098).
+  - `cf-waf-disable` ↔ `cf-waf-disable-audit` — delete/disable a WAF or firewall rule to
+    expose the origin; detect `firewall_rule`/`ruleset` `delete`/`update` (T1562.001).
+  - `cf-worker-deploy` ↔ `cf-worker-deploy-audit` — deploy a malicious Worker to skim/proxy
+    live edge traffic; detect `resource.type=worker` `create`/`update` (T1648).
+
 - **Google Workspace** platform (3 companion-only red↔blue pairs) — detections over the
   Google Workspace admin/token/user audit logs (`product: google_workspace`, field
   `eventName`):
@@ -108,7 +118,7 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
   - `gh-deploy-key-backdoor` ↔ `gh-cred-audit` — writable deploy key / fine-grained
     PAT for durable access; detect `repo.create_deploy_key` /
     `personal_access_token.access_granted` (T1098).
-- Corpus is now 59 paired concepts + 1 unpaired recon entry.
+- Corpus is now 62 paired concepts + 1 unpaired recon entry.
 
 ## [v1.4.0] - 2026-06-30
 
