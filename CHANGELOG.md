@@ -22,6 +22,17 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ### Added
 
+- **Jenkins CI/CD** platform (3 companion-only red↔blue pairs) — the self-hosted
+  counterpart to the GitHub/GitLab SaaS rounds, detected via the Jenkins Audit Trail
+  plugin log (`product: jenkins`, keyword/URI matches):
+  - `jenkins-script-console` ↔ `jenkins-script-console-audit` — Groovy Script Console
+    RCE + in-memory credential dump; detect `/script` / `/scriptText` (T1059).
+  - `jenkins-api-token` ↔ `jenkins-api-token-audit` — mint a user API token for durable
+    non-interactive access; detect `generateNewToken` (T1098).
+  - `jenkins-job-backdoor` ↔ `jenkins-job-backdoor-audit` — create/reconfigure a job to
+    run attacker code on the controller + agents; detect `/createItem` / `/configSubmit`
+    (T1072).
+
 - **Terraform Cloud / IaC** platform (3 companion-only red↔blue pairs) — detections
   are Terraform Cloud audit-trail SPL (`product: terraform`, nested `resource.type` /
   `resource.action`):
@@ -77,7 +88,7 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
   - `gh-deploy-key-backdoor` ↔ `gh-cred-audit` — writable deploy key / fine-grained
     PAT for durable access; detect `repo.create_deploy_key` /
     `personal_access_token.access_granted` (T1098).
-- Corpus is now 50 paired concepts + 1 unpaired recon entry.
+- Corpus is now 53 paired concepts + 1 unpaired recon entry.
 
 ## [v1.4.0] - 2026-06-30
 
