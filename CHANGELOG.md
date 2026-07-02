@@ -22,6 +22,18 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ### Added
 
+- **GitLab CI/CD** platform (3 companion-only red↔blue pairs), mirroring the GitHub
+  Actions round on GitLab audit-event telemetry (`product: gitlab`, field
+  `event_type`):
+  - `gl-runner-hijack` ↔ `gl-runner-audit` — attach an attacker-controlled runner to
+    the project to capture CI jobs + masked variables; detect
+    `set_runner_associated_projects` (T1543).
+  - `gl-protected-branch-off` ↔ `gl-protected-branch-audit` — remove protected-branch
+    rules to land unreviewed code; detect `protected_branch_removed` /
+    `protected_branch_created` (T1562.001).
+  - `gl-token-backdoor` ↔ `gl-token-audit` — mint a project access / deploy token for
+    durable access; detect `project_access_token_created` /
+    `personal_access_token_created` / `deploy_token_created` (T1098).
 - **Harbor container registry** platform (3 companion-only red↔blue pairs), opening
   the container-image / registry supply-chain seam — detections are Harbor
   registry audit-log SPL (`product: harbor` on the Sigma side):
@@ -45,7 +57,7 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
   - `gh-deploy-key-backdoor` ↔ `gh-cred-audit` — writable deploy key / fine-grained
     PAT for durable access; detect `repo.create_deploy_key` /
     `personal_access_token.access_granted` (T1098).
-- Corpus is now 41 paired concepts + 1 unpaired recon entry.
+- Corpus is now 44 paired concepts + 1 unpaired recon entry.
 
 ## [v1.4.0] - 2026-06-30
 
