@@ -20,6 +20,21 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ## [Unreleased]
 
+### Added
+
+- **GitHub Actions CI/CD** platform (3 companion-only red↔blue pairs), opening a
+  new logsource the way the Okta round did — detections are GitHub Enterprise
+  audit-log SPL (`product: github` on the Sigma side):
+  - `gh-self-hosted-runner` ↔ `gh-runner-audit` — rogue self-hosted runner
+    harvests job source + secrets; detect `self_hosted_runner.created` (T1543).
+  - `gh-branch-protection-off` ↔ `gh-branch-protection-audit` — disable/override
+    branch protection to land unreviewed code; detect `protected_branch.destroy` /
+    `protected_branch.policy_override` (T1562.001).
+  - `gh-deploy-key-backdoor` ↔ `gh-cred-audit` — writable deploy key / fine-grained
+    PAT for durable access; detect `repo.create_deploy_key` /
+    `personal_access_token.access_granted` (T1098).
+- Corpus is now 38 paired concepts + 1 unpaired recon entry.
+
 ## [v1.4.0] - 2026-06-30
 
 ### Fixed
