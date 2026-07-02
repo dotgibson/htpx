@@ -22,6 +22,16 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ### Added
 
+- **Google Workspace** platform (3 companion-only red↔blue pairs) — detections over the
+  Google Workspace admin/token/user audit logs (`product: google_workspace`, field
+  `eventName`):
+  - `gws-oauth-grant` ↔ `gws-oauth-audit` — consent-phish a malicious OAuth app into
+    Gmail/Drive scopes; detect token `authorize` (T1528).
+  - `gws-super-admin` ↔ `gws-admin-audit` — promote a controlled user to super admin;
+    detect `GRANT_DELEGATED_ADMIN_PRIVILEGES` / `ASSIGN_ROLE` (T1098.003).
+  - `gws-mail-forward` ↔ `gws-mail-forward-audit` — external auto-forwarding for BEC
+    exfil; detect `email_forwarding_out_of_domain` (T1114.003).
+
 - **Snowflake data cloud** platform (3 companion-only red↔blue pairs) — mirrors the
   2024 Snowflake credential-attack TTPs, detected via `ACCOUNT_USAGE.QUERY_HISTORY`
   (`product: snowflake`, `query_type`/`query_text`):
@@ -98,7 +108,7 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
   - `gh-deploy-key-backdoor` ↔ `gh-cred-audit` — writable deploy key / fine-grained
     PAT for durable access; detect `repo.create_deploy_key` /
     `personal_access_token.access_granted` (T1098).
-- Corpus is now 56 paired concepts + 1 unpaired recon entry.
+- Corpus is now 59 paired concepts + 1 unpaired recon entry.
 
 ## [v1.4.0] - 2026-06-30
 
