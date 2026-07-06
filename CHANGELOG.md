@@ -20,6 +20,8 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ## [Unreleased]
 
+## [v2.0.0] - 2026-07-06
+
 ### Changed
 
 - **README second-pass polish.** The `dotgibson` shield now tracks the
