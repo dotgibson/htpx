@@ -200,5 +200,5 @@ Project Link: [dotgibson](https://github.com/dotgibson/)
 [markdown-url]: https://commonmark.org
 [attack-shield]: https://img.shields.io/badge/MITRE_ATT%26CK-C22035?style=flat-square
 [attack-url]: https://attack.mitre.org
-[fzf-shield]: https://img.shields.io/badge/fzf-2EBB4E?style=flat-square
+[fzf-shield]: https://img.shields.io/github/v/release/junegunn/fzf?style=flat-square&logo=gnometerminal&logoColor=24283B&label=fzf&labelColor=BB9AF7&color=3D59A1
 [fzf-url]: https://github.com/junegunn/fzf
