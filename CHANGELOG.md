@@ -22,6 +22,11 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ### Changed
 
+- **README second-pass polish.** The `dotgibson` shield now tracks the
+  `dotfiles-core` release version; dropped the showcase and LinkedIn shields for a
+  one-line header (LinkedIn moved to Contact); the docs links now point at the
+  documentation hub root (`/docs`); and About gained `Languages` (Markdown) +
+  `Tools` (MITRE ATT&CK, fzf) subsections.
 - **README rebuilt as a lean showcase landing page.** Brought the README up to the
   `dotgibson` exemplar bar — a reference-style shields header, the org logo, a
   collapsible TOC, then a lean body (what htpx is and how it's vendored into

@@ -11,9 +11,7 @@
 -->[![Forks][forks-shield]][forks-url]<!--
 -->[![Stargazers][stars-shield]][stars-url]<!--
 -->[![Issues][issues-shield]][issues-url]<!--
--->[![Showcase][showcase-shield]][showcase-url]<!--
--->[![MIT License][license-shield]][license-url]<!--
--->[![LinkedIn][linkedin-shield]][linkedin-url]
+-->[![MIT License][license-shield]][license-url]
 
 </nobr></div>
 
@@ -32,7 +30,7 @@
     <a href="https://dotgibson.github.io/dotfiles-web/purple/"><strong>Explore the red ↔ blue view »</strong></a>
     <br />
     <br />
-    <a href="https://dotgibson.github.io/dotfiles-web/">Documentation</a>
+    <a href="https://dotgibson.github.io/dotfiles-web/docs">Documentation</a>
     &middot;
     <a href="https://github.com/dotgibson/htpx/issues/new?labels=bug">Report Bug</a>
     &middot;
@@ -44,7 +42,13 @@
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#about-the-project">About The Project</a></li>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#languages">Languages</a></li>
+        <li><a href="#tools">Tools</a></li>
+      </ul>
+    </li>
     <li><a href="#getting-started">Getting Started</a></li>
     <li><a href="#the-corpus">The Corpus</a></li>
     <li><a href="#contributing">Contributing</a></li>
@@ -79,6 +83,17 @@ wider context.
 | `entries/red/*.md` | attacks (frontmatter + command template with `{{slots}}`) |
 | `entries/blue/*.md` | detections (frontmatter + SPL/KQL), paired back to a red entry |
 | `gen-views.sh` | renders entry-backed blocks into the flat views (`--check` drift-gates) |
+
+### Languages
+
+- [![Markdown][markdown-shield]][markdown-url]
+
+Entries are Markdown + YAML frontmatter; detections carry Splunk SPL / KQL.
+
+### Tools
+
+- [![MITRE ATT&CK][attack-shield]][attack-url]
+- [![fzf][fzf-shield]][fzf-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -157,7 +172,7 @@ Distributed under the MIT License. See [`LICENSE`](LICENSE) for more information
 <!-- CONTACT -->
 ## Contact
 
-Garrett Allen - [@gerrrrt](https://x.com/gerrrrt) - <garrettallen2@gmail.com>
+Garrett Allen - [@gerrrrt](https://x.com/gerrrrt) - <garrettallen2@gmail.com> - [LinkedIn](https://linkedin.com/in/garrettallen2)
 
 Project Link: [dotgibson](https://github.com/dotgibson/)
 
@@ -179,9 +194,11 @@ Project Link: [dotgibson](https://github.com/dotgibson/)
 [stars-url]: https://github.com/dotgibson/htpx/stargazers
 [issues-shield]: https://img.shields.io/github/issues/dotgibson/htpx?style=flat-square&logo=github
 [issues-url]: https://github.com/dotgibson/htpx/issues
-[showcase-shield]: https://img.shields.io/badge/showcase-live-7aa2f7?style=flat-square
-[showcase-url]: https://dotgibson.github.io/dotfiles-web
 [license-shield]: https://img.shields.io/github/license/dotgibson/htpx.svg?style=flat-square
 [license-url]: https://github.com/dotgibson/htpx/blob/main/LICENSE
-[linkedin-shield]: https://img.shields.io/badge/LinkedIn-blue?style=flat-square&logo=linkedin&logoColor=white
-[linkedin-url]: https://linkedin.com/in/garrettallen2
+[markdown-shield]: https://img.shields.io/badge/Markdown-000000?style=flat-square&logo=markdown&logoColor=white
+[markdown-url]: https://commonmark.org
+[attack-shield]: https://img.shields.io/badge/MITRE_ATT%26CK-C22035?style=flat-square
+[attack-url]: https://attack.mitre.org
+[fzf-shield]: https://img.shields.io/badge/fzf-2EBB4E?style=flat-square
+[fzf-url]: https://github.com/junegunn/fzf
