@@ -20,7 +20,7 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ## [Unreleased]
 
-## [v2.0.0] - 2026-06-06
+## [v2.0.0] - 2026-07-06
 
 ### Changed
 
