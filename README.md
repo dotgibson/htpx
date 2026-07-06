@@ -94,7 +94,7 @@ git clone https://github.com/dotgibson/htpx ~/htpx
 cd ~/htpx
 export RHOST=10.10.10.5 DOMAIN=corp.local USER_T=svc_sql PASS='…'
 ./htpx            # pick an attack; the preview shows it + its blue detection,
-                  # slot-filled and copied via clip/pbcopy/wl-copy/xclip
+                  # slot-filled and copied via clip/pbcopy/wl-copy/xclip/xsel
 ```
 
 It needs `fzf`; `bat` (preview) and a clipboard helper are used if present, else
@@ -140,7 +140,7 @@ is entry-first:
    markers stays hand-authored and canonical.
 3. **Edit here, not in Kali.** The vendored copy at `dotfiles-Kali`'s
    `offensive/companion/` is overwritten on the next sync — fix it here, then
-   `scripts/sync-companion.sh` fans it out.
+   Kali's `scripts/sync-companion.sh` pulls the change into that copy.
 
 Bugs and ideas: open an
 [issue](https://github.com/dotgibson/htpx/issues).
