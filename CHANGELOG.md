@@ -20,6 +20,8 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ## [Unreleased]
 
+## [v2.0.0] - 2026-06-06
+
 ### Changed
 
 - **README second-pass polish.** The `dotgibson` shield now tracks the
@@ -57,7 +59,7 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
     rights; detect journal `add Owner` / `add Maintainer` (T1098).
   - `pypi-trusted-publisher` ↔ `pypi-trusted-publisher-audit` — register an attacker-controlled
     OIDC trusted publisher for a credential-less publish backdoor; detect an add-`trusted
-    publisher` journal entry (T1098).
+publisher` journal entry (T1098).
 
 - **npm registry** platform (3 companion-only red↔blue pairs) — the software supply-chain
   seam, detected over the npm account/org audit log (`product: npm`, field `action`):
@@ -66,7 +68,7 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
   - `npm-owner-add` ↔ `npm-owner-audit` — add a rogue maintainer for durable publish rights;
     detect `package.owner_add` / `team.user_add` (T1098).
   - `npm-2fa-disable` ↔ `npm-2fa-audit` — disable require-2FA-to-publish (`npm access set
-    mfa=none`) so a stolen token ships quietly; detect `package.edit` `mfa=none` (T1562.001).
+mfa=none`) so a stolen token ships quietly; detect `package.edit` `mfa=none` (T1562.001).
 
 - **Cloudflare edge** platform (3 companion-only red↔blue pairs) — detections over the
   Cloudflare account audit log (`product: cloudflare`, fields `action.type`/`resource.type`):
