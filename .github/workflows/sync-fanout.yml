@@ -29,12 +29,12 @@
 # core.lock did NOT before any PR is opened.
 #
 # ── PINNED TO THE RELEASED REF ──────────────────────────────────────────────────
-# At release time the tag == the main tip (auto-tag.yml tags the just-pushed HEAD of
-# main). Kali's sync-companion.sh pulls a BRANCH tip (git subtree pull <remote>
-# <branch>), so we pass it htpx's `main` — which, at this instant, IS the released
-# commit. companion.lock records the resulting git-subtree-split sha. (sync-companion
-# pulls the branch, not an arbitrary tag/sha; that's acceptable precisely because
-# tag == main tip here. A backfill via workflow_dispatch carries the same caveat.)
+# We vendor the EXACT released tag, not a branch tip: this job resolves the vX.Y.Z tag
+# and hands it to Kali's sync-companion.sh via `--ref "$TAG"`, so `git subtree pull`
+# fetches THAT tag's tree and companion.lock records its git-subtree-split sha. This is
+# what makes a workflow_dispatch BACKFILL of an OLDER tag correct — a bare branch pull
+# would take current main's tip regardless of which release we're fanning out (G10).
+# (Requires the --ref option in dotfiles-Kali's sync-companion.sh.)
 #
 # ── AUTH ────────────────────────────────────────────────────────────────────────
 # The built-in GITHUB_TOKEN is scoped to htpx only — it CANNOT push a branch or open
@@ -230,14 +230,23 @@ jobs:
 
           # Run KALI'S OWN consumer-side sync script inside the clone. It does the
           # `git subtree pull --squash` of htpx + bumps companion.lock — and ONLY that;
-          # it never touches core.lock. Called with NO argument on purpose: the script
-          # derives BOTH the remote (https://github.com/<owner>/htpx.git) AND the branch
-          # (main) from companion.lock. Its positional arg is the REMOTE, not a branch —
-          # passing "main" there made it try to pull from a remote named "main". At
-          # release time htpx main == the released commit, so companion.lock pins the
-          # released sha (per the header's "pinned to the released ref" note).
+          # it never touches core.lock. Pass --ref "$TAG" so it vendors THIS release's
+          # EXACT tree: without it the script pulls companion_branch (main), which on a
+          # workflow_dispatch BACKFILL of an older tag would vendor current main, not the
+          # tag we're fanning out (G10). The remote is still derived from companion.lock
+          # (sync-companion's positional arg is the REMOTE, not a ref). NOTE: --ref needs
+          # the consumer-half change in dotfiles-Kali's sync-companion.sh on Kali's main.
           git config --global --add safe.directory "$kali"
-          "$kali/scripts/sync-companion.sh"
+          # Guard the cross-repo contract: this fan-out REQUIRES Kali's sync-companion.sh
+          # to support --ref (the consumer half). If a mis-ordered merge or an old Kali
+          # checkout lacks it, fail with a legible message instead of the opaque
+          # "unknown option: --ref" the script would otherwise emit. Match the actual
+          # option handler (`--ref)` / `--ref=*)`), not a mention in the header prose.
+          if ! grep -qE '^[[:space:]]*--ref[)=]' "$kali/scripts/sync-companion.sh"; then
+            echo "::error::dotfiles-Kali sync-companion.sh does not support --ref — merge the consumer-half change (its --ref option) first."
+            exit 1
+          fi
+          "$kali/scripts/sync-companion.sh" --ref "$TAG"
 
           # Generated flat views (PURPLE-TEAM.md, offensive/hacktheplanet) live in KALI,
           # outside the subtree. An htpx entry change can shift their generated blocks,
