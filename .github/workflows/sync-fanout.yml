@@ -237,6 +237,15 @@ jobs:
           # (sync-companion's positional arg is the REMOTE, not a ref). NOTE: --ref needs
           # the consumer-half change in dotfiles-Kali's sync-companion.sh on Kali's main.
           git config --global --add safe.directory "$kali"
+          # Guard the cross-repo contract: this fan-out REQUIRES Kali's sync-companion.sh
+          # to support --ref (the consumer half). If a mis-ordered merge or an old Kali
+          # checkout lacks it, fail with a legible message instead of the opaque
+          # "unknown option: --ref" the script would otherwise emit. Match the actual
+          # option handler (`--ref)` / `--ref=*)`), not a mention in the header prose.
+          if ! grep -qE '^[[:space:]]*--ref[)=]' "$kali/scripts/sync-companion.sh"; then
+            echo "::error::dotfiles-Kali sync-companion.sh does not support --ref — merge the consumer-half change (its --ref option) first."
+            exit 1
+          fi
           "$kali/scripts/sync-companion.sh" --ref "$TAG"
 
           # Generated flat views (PURPLE-TEAM.md, offensive/hacktheplanet) live in KALI,
