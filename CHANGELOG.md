@@ -65,7 +65,7 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
     rights; detect journal `add Owner` / `add Maintainer` (T1098).
   - `pypi-trusted-publisher` ↔ `pypi-trusted-publisher-audit` — register an attacker-controlled
     OIDC trusted publisher for a credential-less publish backdoor; detect an add-`trusted
-publisher` journal entry (T1098).
+    publisher` journal entry (T1098).
 
 - **npm registry** platform (3 companion-only red↔blue pairs) — the software supply-chain
   seam, detected over the npm account/org audit log (`product: npm`, field `action`):
