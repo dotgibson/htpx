@@ -140,15 +140,27 @@ jobs:
             # The vX.Y.Z tag pointing at the commit auto-tag.yml just tagged. Clone
             # htpx at that head_sha (full history + tags) and read the tag locally. A
             # read loop (not `| head`) avoids the pipefail/SIGPIPE race under pipefail.
-            git clone --no-checkout "https://github.com/${OWNER}/${REPO}.git" _resolve
-            git -C _resolve fetch --tags origin
+            #
+            # gc.auto=0 / maintenance.auto=false / fetch.writeCommitGraph=false: a plain
+            # clone+fetch can spawn a background `commit-graph write` that keeps writing
+            # into .git/objects/info/commit-graphs AFTER the command returns, racing the
+            # `rm -rf` below — which then fails with "Directory not empty" and, under
+            # `set -e`, turns a should-be-skip run into a spurious red X. Disabling the
+            # background maintenance stops the race at its source.
+            git -c gc.auto=0 -c maintenance.auto=false -c fetch.writeCommitGraph=false \
+              clone --no-checkout "https://github.com/${OWNER}/${REPO}.git" _resolve
+            git -c gc.auto=0 -c maintenance.auto=false -c fetch.writeCommitGraph=false \
+              -C _resolve fetch --tags origin
             tag=""
             while IFS= read -r t; do
               case "$t" in
                 v[0-9]*.[0-9]*.[0-9]*) tag="$t"; break ;;
               esac
             done < <(git -C _resolve tag --points-at "$HEAD_SHA")
-            rm -rf _resolve
+            # Cleanup is best-effort — never fail the step on the temp clone's removal
+            # (it's disposable on an ephemeral runner, and belt-and-suspenders against
+            # any lingering git background process that the settings above didn't catch).
+            rm -rf _resolve || true
           fi
           ver="${tag#v}"
           if ! printf '%s' "$ver" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
