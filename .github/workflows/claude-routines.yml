@@ -94,7 +94,7 @@ jobs:
         run: |
           claude -p "/corpus-review" \
             --model opus \
-            --permission-mode acceptEdits \
+            --permission-mode default \
             --allowedTools "Read,Grep,Glob,Bash(git ls-files:*),Bash(git log:*),WebSearch,WebFetch" \
             --output-format text | tee "$RUNNER_TEMP/corpus-review.md"
       - name: File the report as an issue
@@ -130,7 +130,7 @@ jobs:
         run: |
           claude -p "/release-readiness" \
             --model opus \
-            --permission-mode acceptEdits \
+            --permission-mode default \
             --allowedTools "Read,Grep,Glob,Bash(git log:*),Bash(git describe:*)" \
             --output-format text | tee "$RUNNER_TEMP/release-readiness.md"
       - name: File the report as an issue
@@ -163,7 +163,7 @@ jobs:
         run: |
           claude -p "/release-notes" \
             --model opus \
-            --permission-mode acceptEdits \
+            --permission-mode default \
             --allowedTools "Read,Grep,Glob,Bash(git log:*),Bash(git describe:*)" \
             --output-format text | tee "$RUNNER_TEMP/release-notes.md"
       - name: File the report as an issue
