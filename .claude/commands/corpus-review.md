@@ -1,7 +1,7 @@
 ---
 description: Judgment review of the htpx red↔blue corpus — ATT&CK correctness, pairing fidelity, coverage holes, detection quality (report-first)
 argument-hint: "[tactic, platform, or detection-backend — optional, e.g. credential_access, aws, kql-entra-signin]"
-allowed-tools: Read, Grep, Glob, WebSearch, WebFetch, Bash(git ls-files:*), Bash(git log:*), Bash(./gen-views.sh:*)
+allowed-tools: Read, Grep, Glob, WebSearch, WebFetch, Bash(git ls-files:*), Bash(git log:*)
 ---
 
 # /corpus-review
