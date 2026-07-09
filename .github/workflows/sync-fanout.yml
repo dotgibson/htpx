@@ -149,7 +149,8 @@ jobs:
             # background maintenance stops the race at its source.
             git -c gc.auto=0 -c maintenance.auto=false -c fetch.writeCommitGraph=false \
               clone --no-checkout "https://github.com/${OWNER}/${REPO}.git" _resolve
-            git -c fetch.writeCommitGraph=false -C _resolve fetch --tags origin
+            git -c gc.auto=0 -c maintenance.auto=false -c fetch.writeCommitGraph=false \
+              -C _resolve fetch --tags origin
             tag=""
             while IFS= read -r t; do
               case "$t" in
@@ -158,7 +159,7 @@ jobs:
             done < <(git -C _resolve tag --points-at "$HEAD_SHA")
             # Cleanup is best-effort — never fail the step on the temp clone's removal
             # (it's disposable on an ephemeral runner, and belt-and-suspenders against
-            # any lingering git background process the disables above didn't catch).
+            # any lingering git background process that the settings above didn't catch).
             rm -rf _resolve || true
           fi
           ver="${tag#v}"
