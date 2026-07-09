@@ -30,6 +30,17 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
   scaffolded but dormant until a `CLAUDE_CODE_OAUTH_TOKEN` repo secret is added. Runs
   Thu 08:00 UTC, off the rest of the fleet's routine crons.
 
+### Fixed
+
+- **ATT&CK tactic corrections surfaced by the first `/corpus-review` run**, both
+  verified against live MITRE:
+  - `T1195.002` (Compromise Software Supply Chain) is an **Initial Access** technique,
+    not Execution — retagged `TA0002` → `TA0001` in the npm/pypi malicious-publish
+    pair (4 entries).
+  - `T1047` (WMI) is filed by MITRE only under **Execution**, not Lateral Movement —
+    retagged `TA0008` → `TA0002` in the wmiexec pair (2 entries).
+  Red↔blue tags stay in agreement; pairings unchanged.
+
 ## [v2.1.0] - 2026-07-08
 
 ### Added
