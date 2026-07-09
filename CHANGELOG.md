@@ -20,6 +20,16 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ## [Unreleased]
 
+### Added
+
+- **`/corpus-review` maintenance routine** (`.claude/commands/corpus-review.md` +
+  `.github/workflows/claude-routines.yml`). A weekly, report-first Claude routine that
+  reviews the judgment layer `ci.yml` can't gate: ATT&CK-ID validity (against live
+  MITRE), red↔blue **semantic** pairing fidelity, coverage holes, and detection
+  quality. Files a deduplicated issue and changes nothing. **Inert by default** —
+  scaffolded but dormant until a `CLAUDE_CODE_OAUTH_TOKEN` repo secret is added. Runs
+  Thu 08:00 UTC, off the rest of the fleet's routine crons.
+
 ## [v2.1.0] - 2026-07-08
 
 ### Added
