@@ -29,6 +29,14 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
   quality. Files a deduplicated issue and changes nothing. **Inert by default** —
   scaffolded but dormant until a `CLAUDE_CODE_OAUTH_TOKEN` repo secret is added. Runs
   Thu 08:00 UTC, off the rest of the fleet's routine crons.
+- **`/release-readiness` + `/release-notes` routines** (`.claude/commands/` + two new
+  dispatch-only jobs in `claude-routines.yml`). The htpx twin of Core's release
+  routines: `release-readiness` reads the Conventional Commits + CHANGELOG since the
+  last tag and files a **go/no-go verdict with the recommended next SemVer**;
+  `release-notes` drafts the CHANGELOG entry from those commits. Both report-first
+  (file a deduped issue, change nothing) and dispatch-only — run them at release time
+  via **Actions → claude-routines → Run workflow → routine**. Same inert-by-default
+  token gate.
 
 ### Fixed
 
