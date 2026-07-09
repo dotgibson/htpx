@@ -185,7 +185,7 @@ jobs:
       # reaches checkout. Full history so git subtree downstream has what it needs.
       - name: Check out htpx at the released tag
         if: steps.resolve.outputs.skip != 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ steps.resolve.outputs.tag }}
           fetch-depth: 0
