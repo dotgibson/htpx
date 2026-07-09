@@ -1,7 +1,7 @@
 ---
 description: Draft the next htpx release's CHANGELOG entry from Conventional Commits (report-first)
 argument-hint: "[from-ref — optional, defaults to the last release tag]"
-allowed-tools: Read, Grep, Glob, Bash(git log:*), Bash(git tag:*), Bash(git describe:*)
+allowed-tools: Read, Grep, Glob, Bash(git log:*), Bash(git describe:*)
 ---
 
 # /release-notes

@@ -131,7 +131,7 @@ jobs:
           claude -p "/release-readiness" \
             --model opus \
             --permission-mode acceptEdits \
-            --allowedTools "Read,Grep,Glob,Bash(git log:*),Bash(git tag:*),Bash(git describe:*)" \
+            --allowedTools "Read,Grep,Glob,Bash(git log:*),Bash(git describe:*)" \
             --output-format text | tee "$RUNNER_TEMP/release-readiness.md"
       - name: File the report as an issue
         env:
@@ -164,7 +164,7 @@ jobs:
           claude -p "/release-notes" \
             --model opus \
             --permission-mode acceptEdits \
-            --allowedTools "Read,Grep,Glob,Bash(git log:*),Bash(git tag:*),Bash(git describe:*)" \
+            --allowedTools "Read,Grep,Glob,Bash(git log:*),Bash(git describe:*)" \
             --output-format text | tee "$RUNNER_TEMP/release-notes.md"
       - name: File the report as an issue
         env:

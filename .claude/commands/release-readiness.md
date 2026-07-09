@@ -1,7 +1,7 @@
 ---
 description: Go/no-go readiness check before cutting an htpx release — recommends the next version
 argument-hint: "[target version X.Y.Z — optional]"
-allowed-tools: Read, Grep, Glob, Bash(git log:*), Bash(git tag:*), Bash(git describe:*)
+allowed-tools: Read, Grep, Glob, Bash(git log:*), Bash(git describe:*)
 ---
 
 # /release-readiness
@@ -37,10 +37,13 @@ maintainer writes** — get it right.
      vocabulary, a removed field, or an explicit `feat!`/`BREAKING CHANGE`) → **major**
    - a `feat` (new entries, a new routine, new tooling) → **minor**
    - only `fix`/`chore`/`docs`/`ci` (tag corrections, prose) → **patch**
-3. **Is the corpus sound?** htpx ships the red↔blue corpus, so a release should go
-   out on a green tree: note the latest `ci.yml` status on `main` (pairing +
-   `{{slot}}` + view-drift + shell lint), and whether an open `corpus-review` issue
-   flags anything that ought to ride or block the release.
+3. **Green tree before you ship (maintainer pre-flight).** htpx ships the red↔blue
+   corpus, so a release should go out green — but this routine runs sandboxed with no
+   GitHub-API / `gh` / web access, so it **cannot** read CI status or the issue
+   tracker. Surface these as **confirmations the maintainer must tick**, not checks
+   you performed: (a) `ci.yml` is green on `main` (pairing + `{{slot}}` + view-drift +
+   shell lint), and (b) no open `corpus-review` issue flags something that ought to
+   ride or block the release.
 4. **Downstream awareness.** A release **fans out to `dotfiles-Kali`** (its
    `offensive/companion/` + `companion.lock`) via `sync-fanout.yml`. Surface that as
    context — it's not a blocker, but the maintainer should expect the Kali PR.
