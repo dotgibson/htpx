@@ -58,35 +58,6 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
   allowlist) and fixed a `sync-fanout` tag-resolve race that could throw a spurious red
   X on CHANGELOG-only merges. Renovate action-pin bumps.
 
-### Added
-
-- **`/corpus-review` maintenance routine** (`.claude/commands/corpus-review.md` +
-  `.github/workflows/claude-routines.yml`). A weekly, report-first Claude routine that
-  reviews the judgment layer `ci.yml` can't gate: ATT&CK-ID validity (against live
-  MITRE), red↔blue **semantic** pairing fidelity, coverage holes, and detection
-  quality. Files a deduplicated issue and changes nothing. **Inert by default** —
-  scaffolded but dormant until a `CLAUDE_CODE_OAUTH_TOKEN` repo secret is added. Runs
-  Thu 08:00 UTC, off the rest of the fleet's routine crons.
-- **`/release-readiness` + `/release-notes` routines** (`.claude/commands/` + two new
-  dispatch-only jobs in `claude-routines.yml`). The htpx twin of Core's release
-  routines: `release-readiness` reads the Conventional Commits + CHANGELOG since the
-  last tag and files a **go/no-go verdict with the recommended next SemVer**;
-  `release-notes` drafts the CHANGELOG entry from those commits. Both report-first
-  (file a deduped issue, change nothing) and dispatch-only — run them at release time
-  via **Actions → claude-routines → Run workflow → routine**. Same inert-by-default
-  token gate.
-
-### Fixed
-
-- **ATT&CK tactic corrections surfaced by the first `/corpus-review` run**, both
-  verified against live MITRE:
-  - `T1195.002` (Compromise Software Supply Chain) is an **Initial Access** technique,
-    not Execution — retagged `TA0002` → `TA0001` in the npm/pypi malicious-publish
-    pair (4 entries).
-  - `T1047` (WMI) is filed by MITRE only under **Execution**, not Lateral Movement —
-    retagged `TA0008` → `TA0002` in the wmiexec pair (2 entries).
-    Red↔blue tags stay in agreement; pairings unchanged.
-
 ## [v2.1.0] - 2026-07-08
 
 ### Added
@@ -132,7 +103,7 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
     rights; detect journal `add Owner` / `add Maintainer` (T1098).
   - `pypi-trusted-publisher` ↔ `pypi-trusted-publisher-audit` — register an attacker-controlled
     OIDC trusted publisher for a credential-less publish backdoor; detect an add-`trusted
-publisher` journal entry (T1098).
+    publisher` journal entry (T1098).
 
 - **npm registry** platform (3 companion-only red↔blue pairs) — the software supply-chain
   seam, detected over the npm account/org audit log (`product: npm`, field `action`):
@@ -141,7 +112,7 @@ publisher` journal entry (T1098).
   - `npm-owner-add` ↔ `npm-owner-audit` — add a rogue maintainer for durable publish rights;
     detect `package.owner_add` / `team.user_add` (T1098).
   - `npm-2fa-disable` ↔ `npm-2fa-audit` — disable require-2FA-to-publish (`npm access set
-mfa=none`) so a stolen token ships quietly; detect `package.edit` `mfa=none` (T1562.001).
+    mfa=none`) so a stolen token ships quietly; detect `package.edit` `mfa=none` (T1562.001).
 
 - **Cloudflare edge** platform (3 companion-only red↔blue pairs) — detections over the
   Cloudflare account audit log (`product: cloudflare`, fields `action.type`/`resource.type`):
