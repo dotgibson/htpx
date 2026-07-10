@@ -20,6 +20,8 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ## [Unreleased]
 
+## [v2.3.0] - 2026-07-10
+
 ### Added
 
 - **Command & Control + Impact corpus (14 new red↔blue pairs, +28 entries).** Fills
