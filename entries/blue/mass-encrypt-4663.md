@@ -21,7 +21,8 @@ back it with canary files for a low-false-positive trip.
 ```spl
 index=wineventlog EventCode=4663 Accesses="*WriteData*"
 | bucket _time span=1m
-| stats dc(Object_Name) as files, dc(mvindex(split(Object_Name,"\\"),0)) as dirs by _time, host, Process_Name
+| rex field=Object_Name "(?<dir>.+)\\[^\\]+$"
+| stats dc(Object_Name) as files, dc(dir) as dirs by _time, host, Process_Name
 | where files>200
 | sort - files
 ```

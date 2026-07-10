@@ -20,7 +20,8 @@ Baseline out CDNs and telemetry endpoints that legitimately fan out subdomains.
 ```spl
 index=sysmon EventCode=22
 | eval label=mvindex(split(QueryName,"."),0), qlen=len(label)
-| stats count, dc(QueryName) as uniq, avg(qlen) as avg_label_len by Image, host
+| rex field=QueryName "(?<parent_domain>[^.]+\.[^.]+)$"
+| stats count, dc(QueryName) as uniq, avg(qlen) as avg_label_len by Image, host, parent_domain
 | where uniq>100 AND avg_label_len>25
 | sort - uniq
 ```

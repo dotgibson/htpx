@@ -1,8 +1,8 @@
 ---
 id: account-removal-4725
-title: Detect account access removal (4724/4725/4726 on admins)
+title: Detect account access removal (admin disable/delete/reset + group removal)
 detection: splunk-spl
-event_ids: [4724, 4725, 4726]
+event_ids: [4724, 4725, 4726, 4729, 4733]
 attack:
   tactic: TA0040
   techniques: [T1531]

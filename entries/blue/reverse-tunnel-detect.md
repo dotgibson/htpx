@@ -18,7 +18,8 @@ both directions from a server/workstation that shouldn't hold persistent outboun
 sessions; enrich with chisel/ligolo JA3 fingerprints and destination reputation.
 
 ```spl
-index=zeek sourcetype=zeek:conn NOT id.resp_h IN (10.0.0.0/8,172.16.0.0/12,192.168.0.0/16)
+index=zeek sourcetype=zeek:conn
+| where NOT (cidrmatch("10.0.0.0/8",id.resp_h) OR cidrmatch("172.16.0.0/12",id.resp_h) OR cidrmatch("192.168.0.0/16",id.resp_h))
 | where duration>1800 AND orig_bytes>1000000 AND resp_bytes>1000000
 | table _time, id.orig_h, id.resp_h, id.resp_p, duration, orig_bytes, resp_bytes, ja3
 | sort - duration

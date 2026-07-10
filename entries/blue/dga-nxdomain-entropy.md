@@ -11,18 +11,19 @@ pair: dga-c2-domains
 ---
 
 A DGA host generates far more domains than register, so it leaves a trail of failed
-resolutions to names no human would type: high character entropy, no dictionary
+resolutions to names no human would type: high character randomness, no dictionary
 words, unusual TLD spread. Alert when a single `Image`/host produces a burst of
-distinct NXDOMAIN (or QueryStatus≠0) results with high average label entropy in a
-short window. Sysmon 22 gives the process; the resolver's NXDOMAIN log gives the
-failures — either alone works, together they're high fidelity. Baseline out
-telemetry/antivirus clients that probe many names.
+distinct NXDOMAIN (or QueryStatus≠0) results whose labels are long and vowel-poor
+in a short window — a self-contained proxy for the entropy a `dns_entropy` macro
+would score if you have one. Sysmon 22 gives the process; the resolver's NXDOMAIN
+log gives the failures — either alone works, together they're high fidelity.
+Baseline out telemetry/antivirus clients that probe many names.
 
 ```spl
 index=sysmon EventCode=22 QueryStatus!=0
-| eval label=mvindex(split(QueryName,"."),0)
-| `dns_entropy(label)`
-| stats count as nxdomains, dc(QueryName) as uniq, avg(entropy) as avg_entropy by Image, host
-| where nxdomains>50 AND avg_entropy>3.5
+| eval label=mvindex(split(QueryName,"."),0), llen=len(label)
+| eval vowels=llen-len(replace(lower(label),"[aeiou]","")), vowel_ratio=vowels/llen
+| stats count as nxdomains, dc(QueryName) as uniq, avg(llen) as avg_len, avg(vowel_ratio) as avg_vowel by Image, host
+| where nxdomains>50 AND avg_len>12 AND avg_vowel<0.3
 | sort - nxdomains
 ```

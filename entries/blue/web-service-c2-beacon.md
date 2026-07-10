@@ -19,8 +19,8 @@ API-consumers per host and alert on the rest, weighting unsigned images and
 user-writable paths.
 
 ```spl
-index=sysmon EventCode=3 DestinationHostname IN ("api.telegram.org","*.slack.com","api.github.com","gist.githubusercontent.com")
-| search NOT Image IN ("*\\chrome.exe","*\\msedge.exe","*\\firefox.exe","*\\Teams.exe")
+index=sysmon EventCode=3 (DestinationHostname="api.telegram.org" OR DestinationHostname="*.slack.com" OR DestinationHostname="api.github.com" OR DestinationHostname="gist.githubusercontent.com")
+| search NOT (Image="*\\chrome.exe" OR Image="*\\msedge.exe" OR Image="*\\firefox.exe" OR Image="*\\Teams.exe")
 | stats count, values(DestinationHostname) as dests by host, Image, User
 | where count>3
 ```

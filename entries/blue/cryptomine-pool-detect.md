@@ -16,10 +16,12 @@ period, and an outbound connection speaking Stratum to a mining pool — often o
 outbound connections to pool-domain/port indicators from server or workstation
 fleets, and corroborate with EDR process telemetry for the CPU peg and miner
 command-line flags (`--cpu-max-threads-hint`, `stratum+tcp://`). Either signal alone
-is worth a look; together they're high fidelity.
+is worth a look; together they're high fidelity. Keep the base query port-based
+(`conn.log` has no hostname field), then enrich the survivors with `dns.log`/`ssl.log`
+to resolve `id.resp_h` and match known pool domains (`*xmr*`, `*minexmr*`, `*nanopool*`).
 
 ```spl
-index=zeek sourcetype=zeek:conn (id.resp_p IN (3333,5555,7777,14444) OR resp_domain IN ("*.pool.*","*xmr*","*minexmr*","*nanopool*"))
+index=zeek sourcetype=zeek:conn id.resp_p IN (3333,5555,7777,14444)
 | stats count, sum(orig_bytes) as bytes_out, max(duration) as longest by id.orig_h, id.resp_h, id.resp_p
 | where count>5
 | sort - longest
