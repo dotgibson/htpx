@@ -20,6 +20,27 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ## [Unreleased]
 
+### Added
+
+- **GCP parity — 2 new red↔blue pairs (+4 entries) and a recon entry (+1).** Brings
+  GCP up from a single pair to rough parity with the other big-three clouds.
+  **Persistence** (`T1098`): IAM policy backdoor — `setIamPolicy` binding a rogue
+  principal — detected on the `SetIamPolicy` `ADD` binding delta in Cloud Audit
+  Logs. **Defense Evasion** (`T1562.008`): Cloud Audit log tamper — `DeleteSink` /
+  `auditConfigs` strip — detected via the self-witnessing Admin Activity events
+  (plus a Data Access gap monitor). Also adds an unpaired **Discovery**
+  (`T1580`/`T1526`/`T1069.003`) `gcp-enum-recon` entry (projects / Asset Inventory /
+  IAM blast-radius mapping), mirroring the unpaired on-prem `smb-enum-nxc`.
+
+### Changed
+
+- **`asrep-probing-4771` retargeted to the real AS-REP roast artifact.** The
+  detection now keys primarily on a *successful* `4768` with pre-authentication
+  type 0 (RC4 `0x17`) — the roastable AS-REP its red mate actually emits — and keeps
+  the `4771 0x18` one-source-many-accounts burst as a secondary Kerbrute
+  enumeration/spray tell. Previously it only saw the collateral `4771` probing, not
+  the roast itself.
+
 ## [v2.3.0] - 2026-07-10
 
 ### Added
