@@ -25,5 +25,6 @@ Triage by `protoPayload.authenticationInfo.principalEmail` (the actor) and
 ```text
 logName=~"cloudaudit.googleapis.com%2Factivity"
 (protoPayload.methodName=~"DeleteSink$" OR protoPayload.methodName=~"UpdateSink$"
- OR protoPayload.methodName=~"SetIamPolicy$")
+ OR (protoPayload.methodName=~"SetIamPolicy$"
+     AND protoPayload.serviceData.policyDelta.auditConfigDeltas.action="REMOVE"))
 ```

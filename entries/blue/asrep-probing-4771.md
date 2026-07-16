@@ -10,12 +10,16 @@ source: TrustedSec "Actionable Purple Teaming" (BH USA 2023)
 pair: asreproast-getnpusers
 ---
 
-Detect on the artifact, not the collateral. The roastable AS-REP is a
-*successful* `4768` TGT request with **pre-authentication type 0** (no pre-auth)
-for a non-machine account — that is the account `GetNPUsers`/`--asreproast`
-actually harvests, and the ticket is issued under the account's long-term key
-(RC4 `0x17`), exactly what `hashcat -m 18200` cracks. A normal account pre-auths
-with type 2 (encrypted timestamp), so type 0 on a user is the tell. The
+Detect on the invariant, not the IOC. The roastable AS-REP is a *successful*
+`4768` TGT request with **pre-authentication type 0** (no pre-auth) for a
+non-machine account — that is the account `GetNPUsers`/`--asreproast` actually
+harvests. The AS-REP is issued under the account's long-term key — RC4 (`0x17`)
+where it's enabled, AES (`0x11`/`0x12`) in RC4-disabled domains — and cracked
+offline (`hashcat -m 18200` for the RC4 case). Unlike Kerberoasting the attacker
+doesn't force the etype, so the *invariant* is the type-0 pre-auth on a user, not
+the negotiated cipher — key on it directly and don't constrain the encryption
+type, or AES-only domains slip through. A normal account pre-auths with type 2
+(encrypted timestamp), so type 0 on a user is the tell. The
 one-source-to-many-accounts `4771 0x18` burst is a *secondary* enumeration tell:
 it fires on wrong-password pre-auth failures against pre-auth-**required**
 accounts (Kerbrute enum / spraying), never on the roast itself — so keep it, but
@@ -23,7 +27,6 @@ alert on the `4768` first.
 
 ```spl
 index=main EventCode=4768 Pre_Authentication_Type=0 Account_Name!="*$"
-    Ticket_Encryption_Type=0x17
 | stats count values(Account_Name) AS Accounts by Client_Address
 | sort -count
 ```

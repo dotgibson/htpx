@@ -36,7 +36,9 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 - **`asrep-probing-4771` retargeted to the real AS-REP roast artifact.** The
   detection now keys primarily on a *successful* `4768` with pre-authentication
-  type 0 (RC4 `0x17`) — the roastable AS-REP its red mate actually emits — and keeps
+  type 0 (the AS-REP etype is negotiated — often RC4 `0x17`, AES where RC4 is
+  disabled — so the clause keys on the type-0 invariant, not the cipher) — the
+  roastable AS-REP its red mate actually emits — and keeps
   the `4771 0x18` one-source-many-accounts burst as a secondary Kerbrute
   enumeration/spray tell. Previously it only saw the collateral `4771` probing, not
   the roast itself.
