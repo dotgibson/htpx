@@ -20,6 +20,8 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ## [Unreleased]
 
+## [v2.5.0] - 2026-07-23
+
 ### Added
 
 - **Cloud Collection parity — 1 new red↔blue pair (`T1530` Data from Cloud
@@ -37,9 +39,9 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
   beacons rare-for-the-host, instead of a hardcoded 4-domain allowlist that any
   other trusted-SaaS C2 (Discord, Dropbox, Pastebin, …) evaded silently. The four
   domains are demoted to a labelled seed IOC list, matching the red entry's "the
-  tell is the *process*."
+  tell is the _process_."
 - **`adcs-esc1-4886` retargeted to 4887 with a SAN-logging caveat.** Primary now
-  keys on `4887` (certificate *issued*) plus CA request-attribute auditing; adds a
+  keys on `4887` (certificate _issued_) plus CA request-attribute auditing; adds a
   caveat that the `4886` `upn=` parse is best-effort and can silently miss without CA
   auditing, and separates the `5136 userCertificate` line as shadow-cred/relay
   telemetry rather than an ESC1-SAN backstop.
