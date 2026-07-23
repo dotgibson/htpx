@@ -24,12 +24,12 @@ the gate.
 
 ```spl
 index=sysmon EventCode=3 Initiated=true DestinationPort=443
-| search NOT (Image IN ("*\\chrome.exe","*\\msedge.exe","*\\firefox.exe","*\\Teams.exe","*\\OneDrive.exe","*\\outlook.exe","*\\Dropbox.exe","*\\slack.exe","*\\Code.exe"))
+| search NOT (Image="*\\chrome.exe" OR Image="*\\msedge.exe" OR Image="*\\firefox.exe" OR Image="*\\Teams.exe" OR Image="*\\OneDrive.exe" OR Image="*\\outlook.exe" OR Image="*\\Dropbox.exe" OR Image="*\\slack.exe" OR Image="*\\Code.exe")
 | eval user_writable=if(match(Image,"(?i)\\\\(Users|AppData|Temp|ProgramData|Public)\\\\"),1,0)
 | bucket _time span=1h
 | stats count as conns, dc(_time) as active_hours, values(DestinationHostname) as dests by host, Image, User, DestinationIp, user_writable
 | where conns>3 AND active_hours>2
-| sort - user_writable, - conns
+| sort -user_writable -conns
 ```
 
 Seed list for a fast first triage (relabel, don't gate):

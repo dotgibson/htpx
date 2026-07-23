@@ -25,7 +25,7 @@ enabled so the SAN is actually logged.
 ```spl
 index=main (EventCode=4887 OR EventCode=4886)
 | rex field=Message "(?i)(?:SAN|Subject Alternative Name)\s*[:=].*?(?:upn|dns)=(?<RequestedSAN>[^\s,]+)"
-| stats latest(Requester) as Requester, latest(RequestedSAN) as RequestedSAN, values(EventCode) as codes by RequestID, host
+| stats latest(_time) as _time, latest(Requester) as Requester, latest(RequestedSAN) as RequestedSAN, values(EventCode) as codes by RequestID, host
 | where isnotnull(RequestedSAN) AND RequestedSAN!=Requester
 | table _time, host, RequestID, Requester, RequestedSAN, codes
 ```

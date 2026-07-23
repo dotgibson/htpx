@@ -21,8 +21,11 @@ restrictions, and Object Lock on the crown-jewel buckets.
 > Caveat: `GetObject`/`ListObjects` are S3 **data events** — *not* logged by
 > CloudTrail unless S3 data-event logging is enabled for the bucket (management
 > events won't carry them). Where data events are off, fall back to **S3 server
-> access logs** / CloudWatch `BytesDownloaded`. `CopyObject` to an external bucket
-> is visible via data events on the *source* bucket.
+> access logs** / CloudWatch `BytesDownloaded`. And `CopyObject` data events are
+> recorded against the **destination** bucket — so a server-side copy into an
+> attacker-owned bucket outside the account is a CloudTrail blind spot; catch that
+> path on the *source* bucket's **S3 server access logs** (which record the copy's
+> read) and the `GetObject`-volume signal above, not on destination data events.
 
 CloudTrail telemetry (Splunk `aws:cloudtrail` / Athena / Sentinel
 `AWSCloudTrail`), companion-only — `PURPLE-TEAM.md` is on-prem Windows.
