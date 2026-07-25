@@ -20,6 +20,8 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ## [Unreleased]
 
+## [v2.6.0] - 2026-07-24
+
 ### Fixed
 
 - **`printerbug.py` → `printerbug` in two red entries** (`coerce-petitpotam`,
