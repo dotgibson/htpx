@@ -20,6 +20,31 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ## [Unreleased]
 
+### Added
+
+- **Cloud-IdP escalation parity — 2 new red↔blue pairs** closing the two gaps that
+  were the most visible *relative to what the corpus already claimed to cover*
+  (#62): each is the direct analogue of a pair that already existed for the
+  neighbouring platform.
+  - **Entra privileged directory-role grant (`T1098.003`)** —
+    `entra-directory-role` ↔ `entra-role-assign-audit`. Google Workspace
+    super-admin was covered end-to-end while its Entra twin was not; Entra was
+    well covered on the **app** plane (`consent-grant`, `device-code`,
+    `sp-cred-backdoor`) but had nothing on the **directory-role** plane. Red
+    covers the Graph role-assignment call and flags **Privileged Authentication
+    Administrator** as the quiet choice (it can reset a Global Admin's
+    credentials). Blue keys on the `Add member to role` audit operation, reading
+    the role from the `Role.DisplayName` modified property rather than the
+    top-level event, and covers the PIM `Add eligible member to role` variant —
+    without which a standing backdoor is invisible until it is activated.
+  - **AWS IAM privilege escalation (`T1098.003`)** — `aws-iam-privesc-policy` ↔
+    `aws-iam-privesc-cloudtrail`. GCP had `gcp-iam-policy-backdoor`; AWS covered
+    console / access-key / S3 / destroy but not the escalation itself. Red covers
+    both shapes — the `AttachUserPolicy` self-grant and the `iam:PassRole` path
+    that never touches the actor's own identity. Blue matches both, including
+    `CreatePolicyVersion --set-as-default` (the same escalation wearing an
+    update's clothes) and `PowerUserAccess` alongside `AdministratorAccess`.
+
 ### Changed
 
 - **Cryptomining pair retagged `T1496` → `T1496.001` (Compute Hijacking)**
