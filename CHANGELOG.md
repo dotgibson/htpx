@@ -41,9 +41,13 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
     `aws-iam-privesc-cloudtrail`. GCP had `gcp-iam-policy-backdoor`; AWS covered
     console / access-key / S3 / destroy but not the escalation itself. Red covers
     both shapes — the `AttachUserPolicy` self-grant and the `iam:PassRole` path
-    that never touches the actor's own identity. Blue matches both, including
+    that never touches the actor's own identity. Blue carries a query for each,
+    since one cannot cover both: the self-grant query also catches
     `CreatePolicyVersion --set-as-default` (the same escalation wearing an
-    update's clothes) and `PowerUserAccess` alongside `AdministratorAccess`.
+    update's clothes) and `PowerUserAccess` alongside `AdministratorAccess`,
+    while the PassRole query keys on the launching call's `requestParameters` —
+    **there is no `PassRole` CloudTrail event**, it being an authorization check
+    rather than an API call, which is why that half is so often missed.
 
 ### Changed
 
