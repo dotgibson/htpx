@@ -39,8 +39,12 @@ Seed list for a fast first triage (relabel, don't gate):
 desktop* one. On servers and CI/build agents the same thresholds fire on ordinary
 work: `python.exe`, `node.exe`, `curl.exe`, `git.exe`, and agent binaries under
 `\ProgramData\` legitimately make repeated 443 calls to package registries and SaaS
-APIs all day, and the `user_writable` weighting actively works against you there
-because agent installs live in exactly those paths. Split the search by host role
+APIs all day. The `user_writable` weighting then works against you: that field is
+just this query's own heuristic — its regex matches `\ProgramData\` (and `\Users\`,
+`\AppData\`, `\Temp\`, `\Public\`) as a *proxy* for drop-site paths, not a claim
+about the ACLs — and on a build agent the legitimate tooling lives in exactly those
+directories, so the signal you meant to rank droppers by ranks the agent. Split the
+search by host role
 (or join an asset/CMDB lookup) and give server and CI fleets their own exclusion
 list and a higher `conns`/`active_hours` floor — otherwise the process-context
 discipline this detection is built on is lost to volume.

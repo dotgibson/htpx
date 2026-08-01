@@ -32,9 +32,10 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
   promises process-context discipline, but the deployable SPL excludes only a
   hardcoded Windows *desktop* image list. On servers and CI/build agents,
   `python.exe`/`node.exe`/`curl.exe` and agents under `\ProgramData\` clear the
-  `conns>3 AND active_hours>2` floor doing ordinary work — and the
-  `user_writable` weighting works against you there. Documented the split-by-role
-  tuning the query needs.
+  `conns>3 AND active_hours>2` floor doing ordinary work — and the query's own
+  `user_writable` heuristic (whose regex matches `\ProgramData\` as a proxy for
+  drop-site paths, not as an ACL claim) then ranks that legitimate tooling like a
+  dropper. Documented the split-by-role tuning the query needs.
 
 ## [v2.6.0] - 2026-07-24
 
