@@ -20,6 +20,23 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
 ## [Unreleased]
 
+### Changed
+
+- **Cryptomining pair retagged `T1496` → `T1496.001` (Compute Hijacking)**
+  (`resource-hijack-xmrig`, `cryptomine-pool-detect`). ATT&CK gained
+  sub-techniques under T1496 Resource Hijacking, and MITRE places cryptocurrency
+  mining under `.001` Compute Hijacking (XMRig-using actors are listed on that
+  page). The parent tag is not deprecated, so this is a sharpening rather than a
+  correction — both halves of the pair move together to stay in sync.
+- **`web-service-c2-beacon` gained a host-role tuning caveat.** The entry's prose
+  promises process-context discipline, but the deployable SPL excludes only a
+  hardcoded Windows *desktop* image list. On servers and CI/build agents,
+  `python.exe`/`node.exe`/`curl.exe` and agents under `\ProgramData\` clear the
+  `conns>3 AND active_hours>2` floor doing ordinary work — and the query's own
+  `user_writable` heuristic (whose regex matches `\ProgramData\` as a proxy for
+  drop-site paths, not as an ACL claim) then ranks that legitimate tooling like a
+  dropper. Documented the split-by-role tuning the query needs.
+
 ## [v2.6.0] - 2026-07-24
 
 ### Fixed
