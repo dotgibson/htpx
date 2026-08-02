@@ -18,12 +18,12 @@ Add user-visible changes under `[Unreleased]`. To cut a release, move the
 `main`: `auto-tag.yml` sees the new top version, tags `vX.Y.Z`, and publishes a
 GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
-## [Unreleased]
+## [v2.7.0] - 2026-08-01
 
 ### Added
 
 - **Cloud-IdP escalation parity — 2 new red↔blue pairs** closing the two gaps that
-  were the most visible *relative to what the corpus already claimed to cover*
+  were the most visible _relative to what the corpus already claimed to cover_
   (#62): each is the direct analogue of a pair that already existed for the
   neighbouring platform.
   - **Entra privileged directory-role grant (`T1098.003`)** —
@@ -59,7 +59,7 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
   correction — both halves of the pair move together to stay in sync.
 - **`web-service-c2-beacon` gained a host-role tuning caveat.** The entry's prose
   promises process-context discipline, but the deployable SPL excludes only a
-  hardcoded Windows *desktop* image list. On servers and CI/build agents,
+  hardcoded Windows _desktop_ image list. On servers and CI/build agents,
   `python.exe`/`node.exe`/`curl.exe` and agents under `\ProgramData\` clear the
   `conns>3 AND active_hours>2` floor doing ordinary work — and the query's own
   `user_writable` heuristic (whose regex matches `\ProgramData\` as a proxy for
