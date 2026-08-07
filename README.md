@@ -121,12 +121,18 @@ frontmatter fields it needs with `awk`.
 <!-- THE CORPUS -->
 ## The Corpus
 
-70-plus paired attack/detection concepts (plus a recon entry), spanning
-Credential Access, Privilege Escalation, Lateral Movement, Persistence, Defense
-Evasion, Collection, Exfiltration, and Discovery — across on-prem AD, a multi-cloud
-slice (Entra/M365, AWS, GCP), Kubernetes, Okta, Google Workspace, CI/CD (GitHub
-Actions, GitLab, Jenkins), Harbor, HashiCorp Vault, Terraform Cloud, Snowflake,
-Cloudflare, the npm + PyPI registries, and Slack. A representative slice:
+90 paired attack/detection concepts (plus two unpaired recon entries), spanning
+Credential Access, Privilege Escalation, Lateral Movement, Persistence, Stealth,
+Defense Impairment, Collection, Exfiltration, and Discovery — across on-prem AD,
+a multi-cloud slice (Entra/M365, AWS, GCP), Kubernetes, Okta, Google Workspace,
+CI/CD (GitHub Actions, GitLab, Jenkins), Harbor, HashiCorp Vault, Terraform
+Cloud, Snowflake, Cloudflare, the npm + PyPI registries, and Slack.
+
+Tags track **live** ATT&CK rather than a pinned bundle — currently **v19 (April
+2026)**, which split Defense Evasion into Stealth (`TA0005`) and Defense
+Impairment (`TA0112`). The weekly corpus review re-verifies every technique ID
+against `attack.mitre.org` and flags anything revoked or renamed, so retags land
+as they happen. A representative slice:
 
 | Attack (red) | Detection (blue) | ATT&CK |
 | --- | --- | --- |
