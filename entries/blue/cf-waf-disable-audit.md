@@ -4,8 +4,8 @@ title: Detect WAF/firewall rule disable (Cloudflare audit log)
 detection: cloudflare-audit-log
 event_ids: []
 attack:
-  tactic: TA0005
-  techniques: [T1562.001]
+  tactic: TA0112
+  techniques: [T1686.001]
 source: Cloudflare defense evasion (WAF/firewall tamper)
 pair: cf-waf-disable
 ---

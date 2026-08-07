@@ -18,6 +18,66 @@ Add user-visible changes under `[Unreleased]`. To cut a release, move the
 `main`: `auto-tag.yml` sees the new top version, tags `vX.Y.Z`, and publishes a
 GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 
+## [Unreleased]
+
+### Changed
+
+- **ATT&CK v19 retag — 10 pairs move off revoked or drifted tags** (#65). The
+  v19 release (14 April 2026) split Defense Evasion into **Stealth** (`TA0005`,
+  renamed) and **Defense Impairment** (`TA0112`, new), and reorganized "Impair
+  Defenses" — promoting `T1562.001` to a parent technique and **formally
+  revoking** the sub-techniques this corpus used. Unlike the `T1496` →
+  `T1496.001` move in v2.7.0, this is a correction rather than a sharpening: the
+  old IDs no longer resolve. `attack.mitre.org` now serves a revocation redirect
+  for each, which is what these retags follow:
+  - `T1562.008` → **`T1685.002`** (Disable or Modify Cloud Log) —
+    `gcp-audit-log-disable` ↔ `gcp-audit-log-tamper-audit`.
+  - `T1562.007` → **`T1686.001`** (Cloud Firewall) — `snowflake-network-policy`
+    ↔ `snowflake-network-policy-audit`.
+  - `T1562.001` → **`T1685`** (Disable or Modify Tools, now a parent) —
+    `npm-2fa-disable`, `slack-2fa-disable`, `gh-branch-protection-off`,
+    `gl-protected-branch-off`, `vault-audit-disable` (+ mates). Disabling an MFA
+    requirement, a branch-protection rule, or an audit device are all
+    "disrupting preventative, detection, and response mechanisms," which is the
+    parent's scope; none of the new subs fits them more closely.
+  - `cf-waf-disable` ↔ `cf-waf-disable-audit` takes **`T1686.001`** rather than
+    the `T1685` base its old tag redirects to. Deleting a Cloudflare firewall
+    rule to expose the origin is the same shape as opening a Snowflake IP
+    allowlist, and the two would otherwise end up tagged differently.
+  - All of the above also move `TA0005` → **`TA0112`**, since `T1685`/`T1686`
+    sit under the new Defense Impairment tactic.
+- **Two further v19 drift items**, found by sweeping every technique ID in
+  `entries/` against live ATT&CK rather than only the IDs named in the review:
+  - `dcshadow` ↔ `dcshadow-4742` — `T1207` is not revoked, but it now sits under
+    Defense Impairment, so the pair moves `TA0005` → `TA0112`.
+  - `harbor-artifact-delete` — `T1070` and `TA0005` are both still correct, but
+    the tactic's *name* changed, so its `phase:` label becomes `Stealth`.
+
+  The sweep found no other revoked IDs and no other tactic drift.
+
+### Fixed
+
+- **`password-spray-4625` could not fire on its own paired attack** (#65). The
+  red entry's only command is `kerbrute passwordspray`, which sprays **Kerberos
+  AS-REQ pre-authentication** — a wrong password there lands on the DC as `4771`
+  `Failure_Code=0x18`. The detection keyed exclusively on `4625`, the
+  NTLM/interactive/SMB logon-failure event, which that command never generates.
+  The `4771` fan-out is now the primary query and `4625` the secondary, scoped
+  to the NTLM/SMB spray path where it *is* the right event. The
+  one-source-to-many-distinct-accounts framing was already correct and is
+  unchanged — only the telemetry it keys on was wrong.
+
+### Documentation
+
+- **README states an ATT&CK baseline.** The corpus tracks live ATT&CK rather
+  than a pinned bundle; it now says so, names the current baseline (v19, April
+  2026) and the Stealth / Defense Impairment split, and points at the weekly
+  review as the mechanism that keeps it current. Without this, a retag cycle
+  like the one above reads as unexplained drift.
+- **Corrected the stale corpus count** in the same section: "70-plus paired
+  attack/detection concepts (plus a recon entry)" → 90 pairs plus two unpaired
+  recon entries.
+
 ## [v2.7.0] - 2026-08-01
 
 ### Added

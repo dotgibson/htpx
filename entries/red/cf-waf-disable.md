@@ -2,10 +2,10 @@
 id: cf-waf-disable
 title: Cloudflare WAF/firewall rule disable (open the edge)
 section: Cloudflare / edge
-phase: Defense Evasion
+phase: Defense Impairment
 attack:
-  tactic: TA0005
-  techniques: [T1562.001]
+  tactic: TA0112
+  techniques: [T1686.001]
 platform: [cloudflare]
 source: Cloudflare defense evasion (WAF/firewall tamper)
 pair: cf-waf-disable-audit
