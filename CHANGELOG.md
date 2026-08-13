@@ -66,6 +66,43 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
   to the NTLM/SMB spray path where it *is* the right event. The
   one-source-to-many-distinct-accounts framing was already correct and is
   unchanged — only the telemetry it keys on was wrong.
+- **`npm-publish-audit` filtered out the class its own paired attack publishes
+  as** (#67). The red entry's headline command publishes with a *stolen
+  automation token*, which is recorded as an automation/CI actor — and the
+  detection's `NOT actor.type=ci` excluded exactly that class, so the technique's
+  primary path could never fire. The entry's prose already described the right
+  design ("pin releases to the CI publish identity, allowlist it"), but the query
+  implemented a blanket class-exclusion, which is its opposite: a compromised
+  automation token is indistinguishable from the legitimate one *by class*. Now
+  allowlists the specific publisher identity (`actor.name`, or `actor.token_id`
+  where exposed) and keeps actor class as an enrichment column rather than a
+  gate.
+- **`coercion-5145` missed DFSCoerce and MS-EFSR's `samr` endpoint** (#67). The
+  pipe set gains **`netdfs`** (MS-DFSNM / DFSCoerce, DC-only) and **`samr`**;
+  the red pair gains a `dfscoerce` command so the corpus demonstrates the vector
+  the detection now covers. `Access_Mask="0x3"` also moves out of the filter and
+  into the reported fields — as a gate it silently drops any client that opens
+  the pipe with a different mask, which contradicts the entry's own premise that
+  the endpoint is the invariant and the tool is not.
+
+  **`lsass` was reported as a bogus pipe and has been kept** — the review's
+  claim that it is "a process, not a coercion named pipe" is incorrect, and
+  acting on it would have opened a hole rather than closed one. MS-EFSR is
+  exposed over five SMB named pipes — `efsrpc`, `lsarpc`, `samr`, `lsass`,
+  `netlogon` — and `\pipe\lsass` is a genuine RPC endpoint that PetitPotam and
+  `coercer` both spray. The entry now names all three protocols and their pipes
+  inline, so the membership of the set is justified where it is used.
+- **`cloud-destroy-cloudtrail` was default-blind to the destructive half of its
+  paired attack** (#67). `DeleteObject`/`DeleteObjects` are S3 **data events**,
+  absent from CloudTrail unless per-bucket data-event logging is enabled — so on
+  a default account the query caught the deny-recovery calls (all management
+  events) and silently missed the `aws s3 rm --recursive` burst that is the red
+  entry's payload. Documented with the same caveat and fallback (S3 server
+  access logs / CloudWatch) that sibling entry `aws-s3-exfil-cloudtrail` already
+  carried for `GetObject`, resolving an internal inconsistency. A second query
+  also surfaces singleton `DeleteBucket`/`DeleteTable`/snapshot deletes, which
+  the `count>10` burst floor could never reach despite each being a finding on
+  its own.
 
 ### Documentation
 
@@ -77,6 +114,29 @@ GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
 - **Corrected the stale corpus count** in the same section: "70-plus paired
   attack/detection concepts (plus a recon entry)" → 90 pairs plus two unpaired
   recon entries.
+- **Four detections now document where they fail** (#67), a polish pass on
+  entries whose prose promised more precision than their query delivered:
+  - `consent-grant-auditlogs` said the invariant was a *user* (not admin)
+    consent, but admin consent raises the **same** `Consent to application`
+    operation and the KQL never separated them. Now reads
+    `ConsentContext.IsAdminConsent` out of the modified properties and says to
+    run it both ways — a tenant-wide admin grant on those scopes is rarer and
+    worse than the user grant, and was previously buried rather than surfaced.
+  - `aws-iam-privesc-cloudtrail` notes that its self-grant branch compares
+    `actor` (an ARN/`principalId`) to `target` (a bare `userName`), so the
+    literal equality rarely holds, and that a customer-managed `"Action": "*"`
+    policy escalates identically while matching neither ARN test.
+  - `potato-seimpersonate-4688` notes that PrintSpoofer/GodPotato impersonate
+    SYSTEM *before* spawning the shell, so the 4688 Subject may log as `SYSTEM`
+    and be excluded by the service-account list meant to catch it — keeping the
+    failed escalations and dropping the successful ones. Adds a
+    `Creator_Process_Name` variant as the sturdier 4688 key.
+  - `cf-waf-disable` (red) targeted the **legacy Firewall Rules API**, sunset
+    2025-06-15 and unreproducible on a current tenant; refreshed to the
+    Rulesets-engine equivalent under the `http_request_firewall_custom` phase,
+    using a `enabled:false` PATCH as the quieter variant. The blue half needed
+    no query change — it already matched `ruleset` alongside `firewall_rule` —
+    but now explains why both values are retained.
 
 ## [v2.7.0] - 2026-08-01
 
