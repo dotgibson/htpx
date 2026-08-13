@@ -47,6 +47,14 @@ data events captured it. Run this alongside the burst query, not instead of it:
 ```spl
 index=aws sourcetype=aws:cloudtrail (eventName IN ("DeleteBucket","DeleteTable","DeleteSnapshot","DeleteDBClusterSnapshot","DeleteDBSnapshot"))
 | eval actor=coalesce('userIdentity.userName','userIdentity.arn','userIdentity.principalId')
-| table _time, eventName, actor, sourceIPAddress, userAgent, requestParameters.bucketName, errorCode
+| eval target=coalesce('requestParameters.bucketName','requestParameters.tableName','requestParameters.snapshotId','requestParameters.dBClusterSnapshotIdentifier','requestParameters.dBSnapshotIdentifier')
+| table _time, eventName, actor, target, sourceIPAddress, userAgent, errorCode
 | sort - _time
 ```
+
+Each service names its target under a different `requestParameters` key —
+`bucketName`, `tableName`, `snapshotId`, `dBClusterSnapshotIdentifier`,
+`dBSnapshotIdentifier` — so the `coalesce` above is what makes the row say *what* was
+destroyed rather than just that something was. Extend the list as you add services;
+a row with an empty `target` means a key is missing from it, not that the call had no
+target. Same `eval target=coalesce(...)` shape as `aws-iam-privesc-cloudtrail`.
