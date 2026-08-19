@@ -6,9 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 htpx is the source of truth for the red↔blue paired corpus; it is vendored into
-`dotfiles-Kali` at `offensive/companion/` via `git subtree`. Cutting a release
+`dotfiles-Offense` at `offensive/companion/` via `git subtree`. Cutting a release
 here (a new top version below) tags the repo and fans the change OUT to
-`dotfiles-Kali` as a `companion.lock`-bump PR — see
+`dotfiles-Offense` as a `companion.lock`-bump PR — see
 `.github/workflows/auto-tag.yml` and `.github/workflows/sync-fanout.yml`.
 
 ## How releasing works
@@ -16,11 +16,23 @@ here (a new top version below) tags the repo and fans the change OUT to
 Add user-visible changes under `[Unreleased]`. To cut a release, move the
 `[Unreleased]` entries under a new `## [vX.Y.Z] - YYYY-MM-DD` heading and push to
 `main`: `auto-tag.yml` sees the new top version, tags `vX.Y.Z`, and publishes a
-GitHub Release; `sync-fanout.yml` then opens the Kali sync PR.
+GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 
 ## [Unreleased]
 
 ### Changed
+
+- **The release fan-out targets `dotfiles-Offense`, not `dotfiles-Kali`.** That repo was
+  renamed when it stopped being an OS layer, and `sync-fanout.yml` had not followed. The
+  breakage would have been **silent**: this workflow opens a PR rather than merging, so a
+  fan-out that never runs reddens nothing anywhere. The line that actually breaks is the
+  App-token mint — `repositories:` scopes an installation token **by repository name**,
+  and App installation scopes do not reliably follow a repo redirect — with the clone URL
+  and the three `gh pr` calls behind it. The `$kali` shell variable is renamed with them
+  in the same pass; under `set -euo pipefail` a half-rename is an unbound-variable abort,
+  not a cosmetic miss. Prose across `auto-tag.{yml,sh}`, `README.md`, `gen-views.sh` and
+  the two `.claude/commands` follows. Entries below this heading keep the old name: they
+  are history, and were true when written.
 
 - **ATT&CK v19 retag — 10 pairs move off revoked or drifted tags** (#65). The
   v19 release (14 April 2026) split Defense Evasion into **Stealth** (`TA0005`,
