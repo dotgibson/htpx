@@ -18,29 +18,7 @@ Add user-visible changes under `[Unreleased]`. To cut a release, move the
 `main`: `auto-tag.yml` sees the new top version, tags `vX.Y.Z`, and publishes a
 GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 
-## [Unreleased]
-
-### Fixed
-
-- **`coerce-petitpotam` shipped two commands that do not exist.** Its first line was
-  `impacket-petitpotam {{lhost}} {{rhost}}` — no such tool: PetitPotam is
-  `topotam/PetitPotam`, it is not one of impacket-scripts' ~60 scripts, and Kali packages
-  no `petitpotam` either. Its third was `dfscoerce …`, which is `Wh04m1001/DFSCoerce`, a
-  git clone rather than a binary on anyone's PATH. Both are now `coercer` invocations,
-  since coercer implements the same two vectors as MS-EFSR and MS-DFSNM: filtered with
-  `--filter-method-name Efs` (the whole method family, rather than the single
-  `EfsRpcOpenFileRaw` that is patched on a current DC) and `--filter-protocol-name
-  MS-DFSNM` respectively. The body carries that reasoning. The middle line, `printerbug`,
-  was always correct and is untouched.
-
-  Worth knowing *where* this hid: `dotfiles-Offense` lists `coerce-petitpotam` among the
-  seven entries it deliberately does **not** project into `hacktheplanet` (the prose there
-  is the richer superset), so the `companion.yml` byte-gate never compared the two and
-  never would have. But `~/companion` is symlinked and `htpx` is a first-class alias, so
-  an operator picks the entry, hits `clip`, and gets `command not found` mid-coercion.
-  The `impacket-petitpotam` line was reported by dotfiles-Offense's `/doc-audit` routine
-  (dotgibson/dotfiles-Offense#186); the `dfscoerce` line was found while fixing it, and is
-  newer than that report — it arrived in #68, after v2.7.0 was vendored.
+## [v2.8.0] - 2026-08-20
 
 ### Changed
 
@@ -90,6 +68,26 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
   The sweep found no other revoked IDs and no other tactic drift.
 
 ### Fixed
+
+- **`coerce-petitpotam` shipped two commands that do not exist.** Its first line was
+  `impacket-petitpotam {{lhost}} {{rhost}}` — no such tool: PetitPotam is
+  `topotam/PetitPotam`, it is not one of impacket-scripts' ~60 scripts, and Kali packages
+  no `petitpotam` either. Its third was `dfscoerce …`, which is `Wh04m1001/DFSCoerce`, a
+  git clone rather than a binary on anyone's PATH. Both are now `coercer` invocations,
+  since coercer implements the same two vectors as MS-EFSR and MS-DFSNM: filtered with
+  `--filter-method-name Efs` (the whole method family, rather than the single
+  `EfsRpcOpenFileRaw` that is patched on a current DC) and `--filter-protocol-name
+  MS-DFSNM` respectively. The body carries that reasoning. The middle line, `printerbug`,
+  was always correct and is untouched.
+
+  Worth knowing *where* this hid: `dotfiles-Offense` lists `coerce-petitpotam` among the
+  seven entries it deliberately does **not** project into `hacktheplanet` (the prose there
+  is the richer superset), so the `companion.yml` byte-gate never compared the two and
+  never would have. But `~/companion` is symlinked and `htpx` is a first-class alias, so
+  an operator picks the entry, hits `clip`, and gets `command not found` mid-coercion.
+  The `impacket-petitpotam` line was reported by dotfiles-Offense's `/doc-audit` routine
+  (dotgibson/dotfiles-Offense#186); the `dfscoerce` line was found while fixing it, and is
+  newer than that report — it arrived in #68, after v2.7.0 was vendored.
 
 - **`password-spray-4625` could not fire on its own paired attack** (#65). The
   red entry's only command is `kerbrute passwordspray`, which sprays **Kerberos
