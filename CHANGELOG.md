@@ -18,6 +18,35 @@ Add user-visible changes under `[Unreleased]`. To cut a release, move the
 `main`: `auto-tag.yml` sees the new top version, tags `vX.Y.Z`, and publishes a
 GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 
+## [Unreleased]
+
+### Added
+
+- **Linux endpoint persistence — the corpus's first Linux tradecraft beyond the lone
+  cryptomining pair.** Three new red↔blue pairs (#77), each an on-host persistence
+  technique against its auditd detection. ATT&CK tags verified against live MITRE. The
+  blue halves establish the Linux detection idiom the corpus did not yet have: auditd
+  `-w` path watches (which alert nothing until loaded, so each entry ships its rules),
+  and a single discriminator across all three — the *writing process*, since a package
+  manager touching these paths is baseline and a shell or interpreter touching them is
+  the finding.
+
+  - **`cron-persist` / `cron-persist-auditd`** — `T1053.003`. Watches the cron
+    drop-directories (`/etc/cron.d/`, the `cron.{hourly,daily,weekly,monthly}` dirs,
+    `/var/spool/cron/`) rather than the `crontab` binary, since a file dropped into
+    `/etc/cron.d/` never invokes it.
+  - **`systemd-persist` / `systemd-persist-auditd`** — `T1543.002`. Watches the system
+    unit dirs for a new `.service`/`.timer`, and calls out the per-user
+    `~/.config/systemd/user/` tree an unprivileged implant uses without touching a
+    root-owned path.
+  - **`ssh-authkeys-persist` / `ssh-authkeys-auditd`** — `T1098.004`. The write *is* the
+    detection (there is no process to catch); covers root and service accounts by name,
+    `/home` by directory watch, and the `AuthorizedKeysCommand` `sshd_config` variant
+    that never touches an `authorized_keys` file.
+
+  Two of #77's other coverage holes — Linux privesc and credential access — remain open
+  under that issue for a following tranche.
+
 ## [v2.8.2] - 2026-08-21
 
 ### Fixed
