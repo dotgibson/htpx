@@ -62,8 +62,23 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
     shell or a file outside the baseline SUID set — the same broad-catch, narrow-in-query
     shape the persistence watches use.
 
-  #77's remaining hole — Linux credential access — stays open under that issue for the
-  final tranche.
+- **Linux credential access — /etc/shadow and SSH private keys.** The final #77 tranche,
+  which closes the issue: Linux endpoint coverage goes from one entry to eight, spanning
+  persistence, privilege escalation, and credential access. ATT&CK tags verified against
+  live MITRE. The idiom shifts from watching writes to watching **reads** — auditd
+  captures a read only when the watch is set with `-p r` — with the reading process (and
+  the `auid` behind it) as the discriminator, the read-side mirror of the earlier
+  tranches' writing-process key.
+
+  - **`shadow-dump-credaccess` / `shadow-dump-auditd`** — `T1003.008`. A read watch on
+    `/etc/shadow` is naturally high-fidelity because almost nothing should read it; the
+    query allowlists the auth stack and account tools and surfaces any other reader
+    (`cat`, `cp`, `unshadow`, a `/tmp` binary).
+  - **`ssh-key-theft-credaccess` / `ssh-key-theft-auditd`** — `T1552.004`. Harder,
+    because a private key is read on every outbound SSH; the query leans on the theft
+    *shape* — one process, one `auid`, keys read across **many** users' `.ssh` dirs
+    (`dc(home) > 1`) — with the non-`ssh`/`git` reader allowlist as the weaker
+    single-key arm.
 
 ## [v2.8.2] - 2026-08-21
 
