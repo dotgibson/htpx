@@ -62,8 +62,97 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
     redial case (repeated short sessions to one rare destination) that any duration
     floor invites. JA4/JA4S promoted over JA3.
 
-  Findings 5–8 of #70 and its three coverage holes (Linux endpoint, AD discovery,
-  initial access) are not addressed here.
+  Findings 5–8 of #70 are addressed in the entry below; its three coverage holes are
+  split into #77 (Linux endpoint), #78 (AD discovery) and #79 (initial access).
+
+- **Five more detections gated on the wrong thing — and two entries advertised telemetry
+  the paired half never emits.** Findings 5–8 of the same review (#76), carried over when
+  #75 closed only the HIGH-confidence four. No ATT&CK tags changed here either. Finding 5
+  is the same root cause as above, four more times: the real discriminator lived in the
+  entry's prose while the query gated on something narrower, or on nothing at all.
+
+  - **`entra-role-assign-audit`** — a four-role `has_any` allowlist against a technique
+    whose selling point is blending into role churn. Global Administrator, Privileged Role
+    Administrator, Privileged Authentication Administrator and Application Administrator
+    were the only roles that fired, so an attacker taking User Administrator, Groups
+    Administrator, Cloud Application Administrator or Hybrid Identity Administrator — each
+    a path back to Global Admin — was invisible. The allowlist is gone: every
+    `Add member to role` / `Add eligible member to role` now alerts, ranked by a
+    sensitivity `tier`, with Entra's `isPrivileged` role property named as the maintained
+    source for the tiers.
+
+  - **`cf-worker-deploy-audit`** — the body said Worker deploys should come from CI and a
+    human/out-of-pipeline actor is the tell; the query had no actor clause, making it a
+    catch-all on routine deploys. Now pins the release identity the way `npm-publish-audit`
+    does, with the `api`/`dash` initiation context and actor type as triage columns — and
+    restates why the context cannot be the gate: the paired attack deploys with a *stolen*
+    API token, so it shares the pipeline's actor class.
+
+  - **`cf-waf-disable-audit`** — the body identified `enabled:true→false` as "the quieter
+    way to open the edge," and the query matched every `update` on the ruleset, so the
+    discriminator never reached it. Split into a `delete` arm that always alerts and an
+    `update` arm that tests the recorded new value, plus the same identity allowlist. Adds
+    the version caveat that makes the difference between a detection and a silent no-op:
+    before/after values are an **Audit Logs v1** feature and Cloudflare's **v2** logs do not
+    carry them yet, so the entry now says which arm needs which and what the v2 fallback is.
+
+  - **`lateral-4624-fanout`** — sold as the pass-the-hash detection but implemented as
+    generic `4624` type-3 with `dc(host) > 2`, which is ordinary network-logon fan-out and
+    noisy at that floor. PtH *is* an NTLM authentication, so the primary arm now requires
+    `Authentication_Package="NTLM"` / `Logon_Process="NtLmSsp"` at a higher host floor; the
+    package-agnostic sweep is kept as an explicit hunt arm so overpass-the-hash and mixed
+    package fan-out are not lost.
+
+  - **`okta-api-token-audit` and `okta-api-token`** — the blue half matched only
+    `system.api_token.create` while the red half explicitly recommends the OAuth service-app
+    + private-key-JWT route, which never writes that event. The red half also asserted
+    "Either path writes `system.api_token.create`," which is false. Both corrected against
+    Okta's event-type catalog: the query now covers
+    `app.oauth2.credentials.lifecycle.create`/`.activate` (a client secret **or a JWK** added
+    to a client — the literal act of planting the backdoor),
+    `app.oauth2.client.privilege.grant` (API scopes to an OAuth client; the highest-signal
+    event of the set, with no static-token analogue),
+    `app.oauth2.client.lifecycle.create`/`.update`, and
+    `app.oauth2.client.read_client_secret`, tabling `eventType` so the two persistence shapes
+    stay distinguishable at triage.
+
+  - **`gws-mail-forward-audit`** — tabled `forwarding_email`, which Google does not emit;
+    the documented parameter is `email_forwarding_destination_address`, so the alert fired
+    with an empty destination column — the one field triage needs. Adds the admin-side
+    `CHANGE_APPLICATION_SETTING` arm for the org-wide Gmail policy flip, points at mailbox
+    delegation and forwarding filters as the same-intent channels, and states plainly that
+    whether the paired attack's **Gmail API** path emits `email_forwarding_out_of_domain` is
+    undocumented and must be verified per tenant.
+
+  - **`mtls-c2-sliver` and `mtls-c2-ja3`** — the red half claimed the JA3 "doesn't change
+    across sleep/jitter," overstating it into a protocol invariant; Go implants shift their
+    ClientHello between releases and operators front with uTLS. Both halves now treat JA3 as
+    a build-era IOC with a shelf life, and foreground the invariant neither stated: mutual
+    TLS is *mutual*, so the implant must present a **client certificate**, and outbound
+    client-cert TLS to a destination outside the enterprise PKI is rare without any
+    fingerprint list. That is the blue entry's new primary arm; JA4/JA4S lead the
+    fingerprint arm behind it.
+
+  - **`domain-fronting-cdn` and `domain-fronting-sni-mismatch`** — currency notes on both
+    halves; the pair is kept. Classic fronting is deprecated on the very CDNs the red entry
+    names (CloudFront, Google, Azure, Fastly; roughly 2018–2021), the SNI≠Host invariant
+    needs break-and-inspect that the technique's pinned CDN TLS defeats, and **ECH** voids
+    the mismatch outright. The blue entry's non-decryption arm — a non-browser process
+    reaching a CDN edge — is promoted from afterthought to primary, since none of the three
+    touches it.
+
+  - **`asrep-probing-4771`** — its secondary `4771 Failure_Code=0x18` query duplicated
+    `password-spray-4625`'s **primary** arm at a lower threshold (`> 5` against `> 10`),
+    making it strictly the noisier twin of another entry's finding. Dropped in favour of a
+    cross-reference; the entry keeps the `4768 Pre_Authentication_Type=0` arm that is AS-REP
+    roast's real invariant. Retitled, and `4771` removed from its `event_ids`.
+
+  Two of the review's own claims did not survive checking and were **not** actioned, which
+  is recorded here rather than silently skipped. `gws-mail-forward-audit`'s sourcetype is
+  correct — `email_forwarding_out_of_domain` is documented as a `user_accounts` activity
+  alongside `2sv_enroll`, not a Gmail-application event — so it is unchanged. And the review
+  attributed the okta telemetry error to the blue half when the false claim was in the red
+  half; both were fixed.
 
 ## [v2.8.1] - 2026-08-20
 
