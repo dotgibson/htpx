@@ -18,6 +18,53 @@ Add user-visible changes under `[Unreleased]`. To cut a release, move the
 `main`: `auto-tag.yml` sees the new top version, tags `vX.Y.Z`, and publishes a
 GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 
+## [Unreleased]
+
+### Fixed
+
+- **Four detections could not see what their own prose promised.** From the weekly
+  corpus review (#70). No ATT&CK tags changed — the tagging was checked against live
+  MITRE and is correct and v19-current, including the `TA0112` / `T1685` / `T1686.001`
+  entries that look wrong against pre-v19 memory. These are query-fidelity fixes, and
+  three of the four share one root cause: the real discriminator lived in the prose
+  while the query gated on something narrower.
+
+  - **`gcp-iam-policy-audit`** — the body calls an `allUsers`/`allAuthenticatedUsers`
+    binding "an immediate, standalone finding," but the filter had no member clause at
+    all; its only discriminator was a three-role allowlist, so a public grant of
+    `roles/viewer`, any service `*.admin`, or a custom role fired nothing — including
+    the `allUsers` binding its own paired attack performs. The member test is now an
+    independent branch of an OR, and the role branch matches `[aA]dmin$` rather than a
+    fixed list. Adds the repeated-field triage caveat: `bindingDeltas` clauses can be
+    satisfied by different array elements of one `SetIamPolicy` call.
+
+  - **`pypi-publish-audit`** — gated on `NOT publisher_type=trusted_publisher`, wrong
+    twice. It excludes on an actor *class* the attacker shares (the paired attack
+    uploads with a *stolen* token), which the sibling `npm-publish-audit` forbids
+    verbatim: "Allowlist the identity, never the actor class." And `publisher_type` is
+    not a field the PyPI journal emits, so in Splunk the negation was vacuously true
+    and the search was silently "every release ever published," OIDC ones included.
+    Now mirrors npm: pin `submitted_by`, table the journal's real fields, keep
+    trusted-publishing provenance as a triage column.
+
+  - **`vault-secret-read-audit`** — promised breadth "in a short window" plus a
+    per-token baseline and a new-source-IP arm, and implemented none of them: one
+    unbucketed `dc(request.path) > 25` aggregating over the whole search range. Now
+    buckets on `bin _time span=5m` and floors on the token's own baseline; adds the
+    interactive-token arm as a second query (`userpass-`/`oidc-`/`ldap-` prefixes on
+    `auth.display_name`), and documents the known-source-IP lookup that catches the
+    low-and-slow sweep both thresholds miss.
+
+  - **`reverse-tunnel-detect`** — required >1 MB in *both* directions over 30 minutes,
+    which excludes by construction the asymmetric, bursty pivot traffic its paired
+    `chisel R:socks` / `ligolo-ng` entry describes as "disproportionate." Now gates on
+    duration plus volume in either direction, ranks by orig/resp ratio, and covers the
+    redial case (repeated short sessions to one rare destination) that any duration
+    floor invites. JA4/JA4S promoted over JA3.
+
+  Findings 5–8 of #70 and its three coverage holes (Linux endpoint, AD discovery,
+  initial access) are not addressed here.
+
 ## [v2.8.1] - 2026-08-20
 
 ### Fixed
