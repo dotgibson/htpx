@@ -18,6 +18,35 @@ Add user-visible changes under `[Unreleased]`. To cut a release, move the
 `main`: `auto-tag.yml` sees the new top version, tags `vX.Y.Z`, and publishes a
 GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 
+## [Unreleased]
+
+### Added
+
+- **AD Discovery — the enumeration that precedes every AD attack in the corpus.** Two new
+  red↔blue pairs (#78) closing the discovery gap: the corpus had deep AD *offense*
+  (Kerberoasting, DCSync, RBCD, shadow credentials, ADCS) but no detection for the
+  reconnaissance that comes first. ATT&CK tags (`T1087.002`, `T1069.002`, `T1482`, all
+  Discovery / TA0007) verified against live MITRE.
+
+  - **`bloodhound-collect` / `bloodhound-collect-4662`** — the SharpHound /
+    `bloodhound-python` graph pull. Collection has no single-event signature (every read
+    is legitimate LDAP), so the blue keys on the *shape* — a `4662` directory-access
+    burst, one account against many distinct objects (`dc(Object_Name)`) in a window. Two
+    honesty notes carried in the entry: `4662` needs the Directory Service Access
+    subcategory **and** a SACL on the naming context or the DC emits nothing, and the
+    `0x100` mask is shared with `dcsync-4662` — same event, opposite shape (fan-out vs. a
+    replication right on a few objects).
+  - **`ldap-recon` / `ldap-recon-4662`** — the hand-tool version (`ldapsearch`,
+    `Get-ADUser`, `nxc ldap`). Different shape from the sweep: a few *broad, revealing
+    filters* rather than a fan-out, so the primary arm is `1644` matching the tell-tale
+    filter attributes (`servicePrincipalName`, the `userAccountControl` bitfield,
+    `adminCount`), with a `4662` property-GUID fallback where `1644` is off.
+
+  Both entries state the **`1644`** prerequisite plainly — the expensive/inefficient-LDAP
+  event is off by default and needs DC diagnostics registry thresholds — rather than
+  presenting an arm the tenant may not have as if it always fires. #79 (Initial Access)
+  remains open.
+
 ## [v2.9.0] - 2026-08-21
 
 ### Added
