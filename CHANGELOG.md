@@ -44,8 +44,26 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
     `/home` by directory watch, and the `AuthorizedKeysCommand` `sshd_config` variant
     that never touches an `authorized_keys` file.
 
-  Two of #77's other coverage holes — Linux privesc and credential access — remain open
-  under that issue for a following tranche.
+- **Linux privilege escalation — sudo and SUID abuse.** Two more red↔blue pairs (#77),
+  the privesc tranche following the persistence one above, on the same auditd idiom.
+  ATT&CK tags verified against live MITRE. Both blue halves share one invariant that
+  generalizes past any single GTFOBins vehicle: auditd preserves the **loginuid (`auid`)**
+  across a privilege transition, so a root shell (`euid=0`) whose `auid` is still a real
+  login user is the fingerprint of an escalation — sudo and SUID alike — captured once as
+  the `priv_exec` rule and reused by both.
+
+  - **`sudo-abuse-privesc` / `sudo-abuse-auditd`** — `T1548.003`. Keys on the
+    loginuid-vs-euid gap rather than the allowed binary, plus a `/etc/sudoers` /
+    `/etc/sudoers.d/` watch that catches the misconfiguration being *planted* before it
+    is abused.
+  - **`suid-abuse-privesc` / `suid-abuse-auditd`** — `T1548.001`. Adds a `chmod`/`fchmodat`
+    setuid-bit watch for the planted-SUID path, kept deliberately broad (auditd cannot
+    cheaply filter to only the setuid bit) with the triage narrowing to `04000` on a
+    shell or a file outside the baseline SUID set — the same broad-catch, narrow-in-query
+    shape the persistence watches use.
+
+  #77's remaining hole — Linux credential access — stays open under that issue for the
+  final tranche.
 
 ## [v2.8.2] - 2026-08-21
 
