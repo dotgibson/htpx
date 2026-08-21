@@ -44,8 +44,29 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 
   Both entries state the **`1644`** prerequisite plainly — the expensive/inefficient-LDAP
   event is off by default and needs DC diagnostics registry thresholds — rather than
-  presenting an arm the tenant may not have as if it always fires. #79 (Initial Access)
-  remains open.
+  presenting an arm the tenant may not have as if it always fires.
+
+- **Initial Access — phishing and valid accounts, the front door the corpus never
+  mapped.** Two new red↔blue pairs (#79). Initial Access had been supply-chain-only
+  (`T1195.002`); this adds the two most common intrusion entry points, both with a real
+  Entra sign-in invariant rather than a generic "look for a bad login." ATT&CK tags
+  verified against live MITRE.
+
+  - **`aitm-phish` / `aitm-phish-signin`** — `T1566.002`. Adversary-in-the-middle
+    (Evilginx) phishing that beats MFA by stealing the *session cookie*. The detection
+    keys on the AiTM-specific tell — **token replay across ASNs**: interactive auth from
+    the proxy's network, then non-interactive token use from the attacker's, correlated
+    in `SigninLogs` × `AADNonInteractiveUserSignInLogs`. Names Entra ID Protection's
+    `anomalousToken` risk as the maintained arm where P2 exists.
+  - **`valid-accounts-cloud` / `valid-accounts-signin`** — `T1078.004`. Credential
+    stuffing into a tenant sign-in. Two arms: the failure-burst-then-success shape (the
+    winning-side inverse of `password-spray-4625`), and a first-seen-ASN arm built on a
+    per-user baseline (the same own-history join `vault-secret-read-audit` uses).
+
+  **`T1190` (exploit-public-facing-application) was deliberately left out**, per #79's own
+  guidance: its detection is app/CVE-specific and a generic version would be the
+  no-discriminator defect the whole review targeted. Phishing and valid-accounts are the
+  two #79 flagged as having concrete invariants; both closed here.
 
 ## [v2.9.0] - 2026-08-21
 
