@@ -49,6 +49,45 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
   precedent exactly. `device-code-phish` is not projected into any flat view today,
   so there is no drift to regenerate. (#91)
 
+### Changed
+
+- **`/corpus-review` now reads red entries' command lines.** Nothing in this repo
+  did. All 103 red entries carry a fenced command block, and every gate around them
+  is structural or consistency-only — the pairing graph, `{{slot}}` coverage,
+  `gen-views.sh --check`, shellcheck. The routine's five dimensions read `attack`,
+  `platform`, `pair`, `detection`, and `event_ids`, and never looked inside the
+  fence. Four command-line defects shipped across three releases
+  (`wmi-subscription`, `ntlm-relay-ntlmrelayx`, `coerce-petitpotam`,
+  `bloodhound-collect`) and a human or a downstream routine caught every one.
+
+  The fix is a sixth dimension, not more projection. v2.8.1 already settled that:
+  `wmi-subscription` **was** projected into `hacktheplanet` and the byte-gate stayed
+  green anyway, because it asserts the flat view matches the entry, not that either
+  names a real tool. Projection is orthogonal to this class of bug. The new
+  dimension asks whether each binary exists under that exact name (a `Provides:` is
+  not a binary), whether it is the *right* one where a project has forked or renamed,
+  whether the flags and subcommands are real, whether `platform:` matches what the
+  fence runs on, and whether the command's telemetry can produce the signal the
+  paired blue entry keys on. Dimension 5's `source:` clause was sharpened in the same
+  pass to ask whether provenance credits the toolkit the command actually shows —
+  #91 was exactly that defect, and dimension 5 as written did not catch it.
+
+  Two constraints are written in. **Do not guess a name**: the routine has no shell,
+  `command -v` and `apt-file` are not available to it and none of these tools are
+  installed, so verification is documentation-based via `WebSearch`/`WebFetch` and
+  must cite what was checked — v2.8.1 records a review that guessed twice and was
+  wrong in the same direction both times. And **deleting can beat correcting**, as
+  `wmi-subscription`'s fabricated module showed: substituting the nearest real thing
+  would have made the entry describe a different technique. No tool-permission
+  changes were needed; `WebSearch`/`WebFetch` were already granted in both
+  `corpus-review.md` and `claude-routines.yml`.
+
+  A mechanical tier-1 resolver in *this* repo — binary-exists checking in `ci.yml`
+  rather than only downstream in `dotfiles-Offense` — is deliberately still open. It
+  needs a package-index source of truth for tools the runner cannot install, which is
+  design work rather than an increment. htpx is the source of truth, so a defect
+  caught downstream has already shipped. (#93)
+
 ## [v2.10.1] - 2026-08-22
 
 ### Fixed
