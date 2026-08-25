@@ -9,6 +9,11 @@ attack:
 platform: [windows, network]
 source: hacktheplanet §"Netbios-ssn / Microsoft-ds — TCP 139/445 (SMB)"
 pair: null
+pair_note: >-
+  Unpaired pending a detection entry, NOT because the technique is undetectable:
+  5145 share access and the auth-burst pattern both catch it, and
+  dotfiles-Defense carries host_enum_srvsvc_wkssvc_5145.yml already. Tracked in
+  dotgibson/htpx#97.
 ---
 
 Null session first, then an authed sweep. Spraying one credential across the

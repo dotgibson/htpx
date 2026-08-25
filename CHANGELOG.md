@@ -20,6 +20,32 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 
 ## [Unreleased]
 
+### Added
+
+- **`pair_note:` — a declared hole now has to say why it is a hole.** `pair: null` is a
+  legitimate schema value and the pairing gate has always accepted it, correctly. But a
+  bare `null` is indistinguishable from an oversight, so the only way to triage one was
+  to read the entry's prose and hope the author had left a reason there. That is how
+  `gcp-enum-recon` and `smb-enum-nxc` came to be re-triaged every time someone counted
+  `entries/red/` against `entries/blue/` and got 103 vs 101.
+
+  Worth being precise about what was actually wrong: **both entries did already state
+  their reason**, in prose, and they are the only two in the corpus that do. This was a
+  deliberate, consistently-applied decision — not an oversight. What it was not was
+  machine-readable, and a directory count cannot read prose. `pair_note:` promotes the
+  words that were already written into frontmatter, and CI now rejects an unexplained
+  `null`, so the next declared hole cannot be silent.
+
+  - `gcp-enum-recon` — stays unpaired on its merits: its only telemetry is GCP Data
+    Access logs, which are off by default and rarely collected, so a blue entry would
+    document telemetry most estates do not have.
+  - `smb-enum-nxc` — unpaired **pending** a detection entry, and the note says so. This
+    one is genuinely detectable (5145 share access, the auth-burst pattern) and
+    `dotfiles-Defense` already carries `host_enum_srvsvc_wkssvc_5145.yml`. Authoring the
+    blue entry is tracked separately in #97 rather than held behind this schema change.
+
+  (#97)
+
 ### Fixed
 
 - **`device-code-phish` credited ROADtools for an AADInternals command.** Its

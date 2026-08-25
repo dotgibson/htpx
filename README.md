@@ -146,6 +146,13 @@ as they happen. A representative slice:
 The full set lives in `entries/red|blue/*.md` — the `pair:` field is what makes
 the purple pivot free (Kerberoast ↔ `4769`, DCSync ↔ `4662`, …).
 
+A handful of entries are **deliberately unpaired** and carry `pair: null`. Those
+must also carry a **`pair_note:`** saying why, and CI enforces it: a bare `null`
+is indistinguishable from an oversight, which is how two of them survived several
+rounds of triage. The note is the difference between "this hole is known and
+reasoned" and "someone forgot" — see
+[#97](https://github.com/dotgibson/htpx/issues/97).
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTRIBUTING -->
@@ -156,6 +163,8 @@ is entry-first:
 
 1. **Author the pair.** Add the red + blue entry (`entries/red|blue/*.md`) with
    ATT&CK tags and a `pair:` link; normalize command placeholders to `{{slots}}`.
+   If the technique genuinely has no counterpart, set `pair: null` **and** a
+   `pair_note:` giving the reason — CI rejects an unexplained `null`.
 2. **Regenerate the views.** Mark the matching blocks in the flat files and run
    `gen-views.sh`; `gen-views.sh --check` (CI) fails on drift. Prose outside the
    markers stays hand-authored and canonical.
