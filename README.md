@@ -121,7 +121,7 @@ frontmatter fields it needs with `awk`.
 <!-- THE CORPUS -->
 ## The Corpus
 
-90 paired attack/detection concepts (plus two unpaired recon entries), spanning
+102 paired attack/detection concepts (plus one unpaired recon entry), spanning
 Credential Access, Privilege Escalation, Lateral Movement, Persistence, Stealth,
 Defense Impairment, Collection, Exfiltration, and Discovery — across on-prem AD,
 a multi-cloud slice (Entra/M365, AWS, GCP), Kubernetes, Okta, Google Workspace,
@@ -146,12 +146,11 @@ as they happen. A representative slice:
 The full set lives in `entries/red|blue/*.md` — the `pair:` field is what makes
 the purple pivot free (Kerberoast ↔ `4769`, DCSync ↔ `4662`, …).
 
-A handful of entries are **deliberately unpaired** and carry `pair: null`. Those
-must also carry a **`pair_note:`** saying why, and CI enforces it: a bare `null`
-is indistinguishable from an oversight, which is how two of them survived several
-rounds of triage. The note is the difference between "this hole is known and
-reasoned" and "someone forgot" — see
-[#97](https://github.com/dotgibson/htpx/issues/97).
+An entry may be **deliberately unpaired** and carry `pair: null`. It must also carry
+a **`pair_note:`** saying why, and CI enforces it: a bare `null` is indistinguishable
+from an oversight, which is how two of them survived several rounds of triage. The
+note is the difference between "this hole is known and reasoned" and "someone
+forgot" — see [#97](https://github.com/dotgibson/htpx/issues/97).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
