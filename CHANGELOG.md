@@ -22,6 +22,29 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 
 ### Added
 
+- **`smb-enum-nxc` is paired — `entries/blue/smb-enum-5145.md`.** The other half of #97,
+  kept out of the schema change so it was not held behind new detection content. The
+  `pair_note:` said "unpaired pending a detection entry", and this is that entry.
+
+  The detection was never the hard part: `dotfiles-Defense` has carried
+  `detections/sigma/discovery/host_enum_srvsvc_wkssvc_5145.yml` for months, and its own
+  validation note already named this red entry as the way to reproduce it. The corpus
+  simply had nothing to put beside the attack. Ported to SPL, it keys on the `srvsvc` /
+  `wkssvc` RPC pipes over `IPC$` — the transport for `NetShareEnum`, `NetSessionEnum` and
+  `NetWkstaUserEnum` — and counts **distinct hosts per principal**, because breadth
+  across hosts is what separates an enumeration pass from a user browsing a share.
+
+  That pipe set is disjoint from the corpus's two other 5145 detections
+  (`coercion-5145` on spoolss/efsrpc/lsarpc/netlogon/lsass; `dpapi-backupkey-5145` on
+  protected_storage). Same event ID, different RPC interface, different technique — the
+  entry says so explicitly so nobody consolidates the three later.
+
+  `pair_note:` is removed from the red entry rather than reworded: it described a hole
+  that no longer exists, and leaving it would be the same defect #98 fixed, pointed the
+  other way. `gcp-enum-recon` is now the corpus's only unpaired entry, on its merits.
+
+  (#97)
+
 - **`pair_note:` — a declared hole now has to say why it is a hole.** `pair: null` is a
   legitimate schema value and the pairing gate has always accepted it, correctly. But a
   bare `null` is indistinguishable from an oversight, so the only way to triage one was
@@ -47,6 +70,13 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
   (#97)
 
 ### Fixed
+
+- **The README's corpus count had drifted by twelve.** It said "90 paired
+  attack/detection concepts", which was exact when it was written — 92 red entries, two
+  of them unpaired — and then eleven pairs landed without it. Recomputed from the tree:
+  **102 paired, one unpaired.** A count is the cheapest thing to leave stale and the
+  first number a reader trusts, which is the same reasoning that put a gate on
+  `dotfiles-Defense`'s gate-list counts.
 
 - **`device-code-phish` credited ROADtools for an AADInternals command.** Its
   `source:` read `dirkjanm (ROADtools) & Secureworks CTU` while the only line in the
@@ -76,6 +106,15 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
   so there is no drift to regenerate. (#91)
 
 ### Changed
+
+- **`smb-enum-nxc` now carries the whole nxc fold, not a three-line excerpt.** It was
+  missing `--loggedon-users` and the `/24` credential spray that
+  `dotfiles-Offense`'s `hacktheplanet` has always shown in the same section, so the
+  entry was a subset of the flat file it is supposed to be canonical for. With the two
+  lines added and the inline comments matched, `gen-views.sh` renders the entry
+  byte-identical to those lines — which is what lets Offense wrap them in a
+  `companion:gen` marker without losing content. The `/24` form is also the one the new
+  paired detection keys on, so omitting it hid the link the pair exists to show.
 
 - **`/corpus-review` now reads red entries' command lines.** Nothing in this repo
   did. All 103 red entries carry a fenced command block, and every gate around them
