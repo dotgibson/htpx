@@ -195,6 +195,42 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
   design work rather than an increment. htpx is the source of truth, so a defect
   caught downstream has already shipped. (#93)
 
+- **`asrep-probing-4771` is renamed `asrep-roast-4768`.** The slug named an event the
+  entry deliberately does not query. Its `event_ids` has been `[4768]` alone since
+  v2.8.2 dropped the secondary `4771 Failure_Code=0x18` arm as a noisier duplicate of
+  `password-spray-4625`'s primary; its title already said *4768 no-preauth*; and its
+  closing paragraph explicitly disowns `4771`, handing it to that entry. The `4771` was
+  a fossil of the v2.4.0 retarget, which changed what the entry detects without changing
+  what it is called. Every sibling in the Kerberos set — `kerberoasting-4769`,
+  `dcsync-4662`, `golden-ticket-4769`, `password-spray-4625` — is
+  `<technique>-<primary event>` and means it; this was the only one whose suffix named
+  an event it excludes.
+
+  **`asrep-roast`, not `asrep-probing`.** "Probing" *is* the `4771` enumeration concept
+  this entry rejects — the entry is about the roast, which succeeds and therefore never
+  emits a `4771` failure at all. `dotfiles-Defense` arrived at the same word
+  independently when it named its rule `asrep_roast_4768.yml`, which is the best
+  available evidence for what a second reader calls this.
+
+  **An entry `id` is a public surface, so this is a breaking change** — the next release
+  cutting it is a **major** bump, per the rule in `.claude/commands/release-readiness.md`.
+  Consumers cite entries by id and by path: `dotfiles-Offense` wraps this one in a
+  `companion:gen` marker in `PURPLE-TEAM.md`, and `dotfiles-Defense` cites its file URL
+  from two Sigma rules and a generated coverage row. Neither is reachable from this
+  repo's gates — `ci.yml` verifies the pairing graph, and nothing here can see a
+  downstream marker or citation.
+
+  **The fan-out is ordering-sensitive and must be done by hand before the release.**
+  `sync-fanout.yml` runs Offense's `gen-views.sh` before it commits, and that script
+  hard-fails (exit 2, in both `--check` and bare mode) on a marker naming an id with no
+  entry — so a release cut before Offense's markers are updated aborts the sync with no
+  PR, *after* `auto-tag.yml` has already published the tag and Release. The reverse
+  order reddens Offense's own drift gate. Both consumers are sha-pinned, so the window
+  between this commit and that fix is safe; it just needs to be short. (#103)
+
+  The v2.8.2 and v2.4.0 notes below keep the old name: they are history, and were true
+  when written. This bullet is the forward pointer.
+
 ## [v2.10.1] - 2026-08-22
 
 ### Fixed
