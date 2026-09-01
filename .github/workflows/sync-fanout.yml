@@ -42,8 +42,10 @@
 # to dotfiles-Offense (`contents:write` + `pull-requests:write`) at run time from the fleet
 # App — the FLEET_APP_ID variable + FLEET_APP_PRIVATE_KEY secret, see dotfiles-core's
 # GITHUB-APP-AUTH.md. The App is the ONLY auth here: the legacy FLEET_SYNC_TOKEN PAT was
-# deleted when G2 finished (dotfiles-core #683/#819), so there is nothing behind it. The
-# preflight fails loudly, before the first clone, if the mint did not happen.
+# deleted when G2 finished (dotfiles-core #683/#819), so there is nothing behind it. If the
+# mint did not happen the preflight fails loudly BEFORE anything touches dotfiles-Offense —
+# note htpx itself is already checked out by then (with the built-in token), so the
+# guarantee is about the first CROSS-REPO clone/push, not the first clone in the job.
 #
 # ── WHY workflow_run, NOT release: published ────────────────────────────────────
 # A Release created by the built-in GITHUB_TOKEN (as auto-tag.yml does) does NOT emit
@@ -193,7 +195,9 @@ jobs:
           path: htpx
 
       # Mint a short-lived token scoped to just dotfiles-Offense IF the fleet GitHub App is
-      # configured (the FLEET_APP_ID variable is set). A skipped mint has nothing to fall
+      # fully configured — BOTH the FLEET_APP_ID variable AND the FLEET_APP_PRIVATE_KEY
+      # secret, the latter via the HAS_APP_KEY presence flag (a secret cannot be tested in a
+      # step `if:` directly). Either one missing skips the step. A skipped mint has nothing to fall
       # back to — the legacy FLEET_SYNC_TOKEN PAT is deleted (dotfiles-core #683/#819) — so
       # the preflight below turns that into a legible failure. The App does NOT need
       # htpx access (htpx is read with the built-in token via KEY_1 below); the minted token
@@ -208,8 +212,8 @@ jobs:
           owner: ${{ github.repository_owner }}
           repositories: dotfiles-Offense
 
-      # Fail early and legibly if the App minted no token — otherwise the first
-      # clone/push would fail with an opaque 403.
+      # Fail early and legibly if the App minted no token — otherwise the first CROSS-REPO
+      # clone/push (into dotfiles-Offense, below) would fail with an opaque 403.
       - name: Preflight — a cross-repo write token is available
         if: steps.resolve.outputs.skip != 'true'
         env:
