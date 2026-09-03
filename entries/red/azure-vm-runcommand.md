@@ -26,7 +26,7 @@ no slots.)
 ```sh
 # action Run Command — fire-and-forget, script inline in the ARM request
 az vm run-command invoke -g <rg> -n <vm> --command-id RunPowerShellScript \
-  --scripts 'whoami; net user pwn P@ssw0rd! /add'
+  --scripts 'whoami; net user <pwn-user> <pwn-pass> /add'
 # managed Run Command — persists as a runCommands child resource; script pulled from a SAS blob
 az vm run-command create -g <rg> --vm-name <vm> --name <rc-name> \
   --script-uri '<blob-sas-uri>' --run-as-user <local-user>
