@@ -20,6 +20,30 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 
 ## [Unreleased]
 
+### Fixed
+
+- **`suid-abuse-auditd`'s watch does not load on arm64, and the reason it gives for staying
+  broad was overstated.** The rules block names `chmod` in the `b64` line. That syscall is a
+  legacy one the generic table does not carry, so on **aarch64 it does not exist** — and
+  `auditctl` does not skip an unknown name, it reports `Syscall name unknown: chmod` and
+  treats it as a fatal parse error, so the rules *after* it in the merged `audit.rules` do
+  not load either. An arm64 host following this entry got a failed load, not a narrower
+  watch. The block now carries an arm64 line with `chmod` dropped, which costs no coverage:
+  `fchmodat` is the only path-based chmod that architecture has, so every `chmod u+s` there
+  already arrives through it.
+
+  The entry also said auditd "cannot cheaply filter the rule down to only the setuid bit".
+  It can — the catch is that the mode argument sits at a **different index per syscall**:
+  `a1` for `chmod(path, mode)` and `fchmod(fd, mode)`, but `a2` for
+  `fchmodat(dirfd, pathname, mode, flags)`, where `a1` is the pathname pointer. So the
+  narrowed form is four lines, one pair per index, and the obvious single line across all
+  three syscalls silently ANDs a pointer against the bitmask on every `fchmodat`. That is
+  not hypothetical: the paired blue rule in dotfiles-Defense shipped exactly that bug and
+  was split per index in dotgibson/dotfiles-Defense#265. This entry keeps the broad watch —
+  it also catches the bit being *removed*, which the narrowed form discards — but now says
+  so on the real trade-off rather than on a claim that was not true, and records the
+  argument indices so the next author does not write the one-line form.
+
 ### Added
 
 - **`auto-tag.sh` now pre-flights `dotfiles-Offense`'s companion markers, and refuses
