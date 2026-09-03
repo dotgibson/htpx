@@ -34,8 +34,9 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
   - **`azure-vm-runcommand` ↔ `azure-runcommand-activity`** — VM Run Command, control-plane
     code execution inside the guest as SYSTEM/root (`T1651` Cloud Administration Command,
     the technique MITRE cites APT29 for and names "Azure RunCommand" in). The detection
-    matches on the `runcommand` substring so it catches the managed `runCommands` write, not
-    just the `runCommand/action` invoke — a query narrowed to one path would miss its own
+    matches both operation terms (`has_any ("runcommand", "runcommands")`) so it catches the
+    managed `runCommands` write, not just the `runCommand/action` invoke — a query narrowed
+    to one path (or to one term) would miss its own
     paired red's stealthier half, the mistake `kerberoasting-4769` was fixed for. Activity
     Log is on by default, so this half needs no telemetry caveat.
 
