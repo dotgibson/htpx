@@ -93,6 +93,42 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 
   Severity is now sticky, 2 > 1 > 0, and the result no longer depends on target order.
 
+- **`kerberoasting-4769` only detected the roast its own paired red does not perform**
+  (#112). The query gated on `Ticket_Encryption_Type=0x17` as "the invariant", but
+  `impacket-GetUserSPNs -request` and `nxc --kerberoasting` do not force the etype — the
+  TGS is issued under the SPN account's `msDS-SupportedEncryptionTypes`, so an AES-only
+  service account yields a `0x11`/`0x12` ticket the detection never saw. Only Rubeus
+  `/tgtdeleg` and Orpheus force RC4, and those are not what the pair ships.
+
+  The corpus already had this right one entry over: `asrep-roast-4768` says in as many
+  words that "the attacker doesn't force the etype... don't constrain the encryption
+  type, or AES-only domains slip through." Kerberoasting keyed on the cipher anyway,
+  with no AES arm and no caveat. RC4 is now the high-signal fast path rather than the
+  sole filter, with a distinct-SPN fan-out arm that catches the roast at any etype, and
+  the red entry no longer claims the downgrade is "the tell on the blue side".
+
+- **`valid-accounts-cloud` shipped an MSOLSpray invocation that does not exist** (#112).
+  `MSOLSpray --userlist ... --password ...` is neither form of the tool: dafthack's
+  canonical MSOLSpray is PowerShell (`Invoke-MSOLSpray -UserList -Password`), and the
+  GNU-style flags belong to the Python port, which runs as `python3 MSOLSpray.py`. Now
+  the latter, matching the flags that were already written. Same class as the
+  `proxychains` -> `proxychains4` fix; no paired-blue impact, since
+  `valid-accounts-signin` keys on the failure-burst-then-success shape either form
+  produces.
+
+- **The npm 2FA pair targeted the wrong downgrade, and the detection contradicted its own
+  prose** (#112). The red set `mfa=none`, which npm's secure-by-default work has been
+  narrowing out of the documented values — while the actually-interesting downgrade is
+  `publish` -> `automation`, defined by npm as "2FA required, but automation tokens
+  override it". That is precisely the "stolen token publishes unattended" outcome the
+  entry described, it is unambiguously still supported, and it leaves the setting reading
+  as 2FA-protected to anyone skimming. The blue side told operators to "alert on any
+  downgrade" and then filtered on `mfa=none` alone, so it would have missed the red it is
+  paired to; it now matches both values, with `none` as the legacy arm.
+
+- **ATT&CK v19's release date, in the v2.8.0 notes.** Recorded as 14 April 2026; MITRE
+  dates v19 to **28 April 2026**. History-only — no entry was tagged off it.
+
 ## [v3.0.1] - 2026-08-28
 
 ### Fixed
@@ -661,7 +697,7 @@ it" — the command was run, and both guesses were wrong in the same direction: 
   are history, and were true when written.
 
 - **ATT&CK v19 retag — 10 pairs move off revoked or drifted tags** (#65). The
-  v19 release (14 April 2026) split Defense Evasion into **Stealth** (`TA0005`,
+  v19 release (28 April 2026) split Defense Evasion into **Stealth** (`TA0005`,
   renamed) and **Defense Impairment** (`TA0112`, new), and reorganized "Impair
   Defenses" — promoting `T1562.001` to a parent technique and **formally
   revoking** the sub-techniques this corpus used. Unlike the `T1496` →
