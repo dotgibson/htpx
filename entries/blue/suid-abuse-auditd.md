@@ -18,16 +18,32 @@ SUID binaries are installed by packages, not `chmod`'d into existence at runtime
 a root shell (`euid=0`) whose `auid` is still a real login user, because the setuid
 transition, like sudo, never rewrites the loginuid. Watch both.
 
+**Install ONE of the two blocks below — the one matching the host.** They are
+alternatives, not halves of a set: the x86_64 block names `chmod`, which does not exist
+on aarch64, and `auditctl` treats an unresolvable syscall name as a fatal parse error
+rather than skipping the line, so installing both on arm64 fails the load at the first
+`chmod` and the rules after it never load either.
+
+x86_64 / i386:
+
 ```conf
 # /etc/audit/rules.d/suid-privesc.rules — load with `augenrules --load`
 # perm changes by a real login user (the chmod u+s plant); the b64/b32 split matters.
-# x86_64 / i386:
 -a always,exit -F arch=b64 -S chmod,fchmod,fchmodat -F auid>=1000 -F auid!=4294967295 -F key=suid_change
 -a always,exit -F arch=b32 -S chmod,fchmod,fchmodat -F auid>=1000 -F auid!=4294967295 -F key=suid_change
-# arm64: DROP `chmod` from the b64 line — that syscall does not exist on aarch64 and
-# auditctl fails the load rather than skipping it (see the arch note below).
+```
+
+arm64 (aarch64) — instead of the block above, never alongside it:
+
+```conf
+# /etc/audit/rules.d/suid-privesc.rules — load with `augenrules --load`
+# No `chmod`: aarch64 has no such syscall, and naming it fails the whole load.
 -a always,exit -F arch=b64 -S fchmod,fchmodat -F auid>=1000 -F auid!=4294967295 -F key=suid_change
 ```
+
+There is no `b32` line in the arm64 block on purpose: it is meaningful only on a kernel
+built with 32-bit compat, and it is the one place `chmod` may legitimately be named,
+since the arm32 table does carry it. Add it only if your kernel has compat enabled.
 
 Linux auditd telemetry, companion-only — `PURPLE-TEAM.md` is on-prem Windows. The abuse
 arm reuses `priv_exec` from `sudo-abuse-auditd` — the loginuid-vs-euid gap is one

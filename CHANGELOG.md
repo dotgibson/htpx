@@ -28,9 +28,11 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
   `auditctl` does not skip an unknown name, it reports `Syscall name unknown: chmod` and
   treats it as a fatal parse error, so the rules *after* it in the merged `audit.rules` do
   not load either. An arm64 host following this entry got a failed load, not a narrower
-  watch. The block now carries an arm64 line with `chmod` dropped, which costs no coverage:
-  `fchmodat` is the only path-based chmod that architecture has, so every `chmod u+s` there
-  already arrives through it.
+  watch. The rules are now split into two blocks, x86_64/i386 and arm64, presented as
+  alternatives to install one of rather than as one block to paste whole — the failure mode
+  is a copy-paste one, so a block a reader can copy entire and still break is not a fix.
+  Dropping `chmod` on arm64 costs no coverage: `fchmodat` is the only path-based chmod that
+  architecture has, so every `chmod u+s` there already arrives through it.
 
   The entry also said auditd "cannot cheaply filter the rule down to only the setuid bit".
   It can — the catch is that the mode argument sits at a **different index per syscall**:
