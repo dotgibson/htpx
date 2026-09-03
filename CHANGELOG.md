@@ -48,6 +48,22 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 
 ### Added
 
+- **New pair `aws-snapshot-share-exfil` ↔ `aws-snapshot-share-cloudtrail` — T1537 Transfer
+  Data to Cloud Account (dotgibson/dotfiles-Defense#262).** The corpus had no entry for exfil
+  that never crosses an egress boundary: snapshot a volume, grant restore rights to an
+  attacker-controlled account, and take the copy from there. Bytes move inside AWS's own
+  address space over AWS's own APIs, so egress monitoring, DLP, and the `GetObject`-volume
+  signal in `aws-s3-mass-exfil` all stay quiet — every existing Exfiltration entry here
+  (`slack-external-share`, `snowflake-exfil-stage`) keys on crossing an external boundary,
+  which is exactly the case this one does not.
+  The blue side is the reverse of its two CloudTrail siblings' problem: `ModifySnapshotAttribute`
+  and friends are **management** events, in every trail by default, so it needs no data-event
+  logging where `aws-s3-exfil-cloudtrail` and `cloud-destroy-cloudtrail` both go half-blind.
+  It carries its own blind spot instead, stated in the entry: the attacker's `CopySnapshot`
+  runs in *their* account and never reaches the victim's trail, and a share → copy → un-share
+  sequence leaves a clean permission list — so posture sweeps that inventory currently-shared
+  snapshots see nothing, and the grant event is the only observable there will ever be.
+
 - **`auto-tag.sh` now pre-flights `dotfiles-Offense`'s companion markers, and refuses
   to tag when one is stale (#106).** Nothing in htpx could see those markers, and the
   only thing that would notice ran too late to matter. `sync-fanout.yml` re-vendors the
