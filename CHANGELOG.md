@@ -18,7 +18,7 @@ Add user-visible changes under `[Unreleased]`. To cut a release, move the
 `main`: `auto-tag.yml` sees the new top version, tags `vX.Y.Z`, and publishes a
 GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 
-## [Unreleased]
+## [v3.2.0] - 2026-09-03
 
 ### Added
 
@@ -36,9 +36,9 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
     the technique MITRE cites APT29 for and names "Azure RunCommand" in). The detection
     matches both operation terms (`has_any ("runcommand", "runcommands")`) so it catches the
     managed `runCommands` write, not just the `runCommand/action` invoke — a query narrowed
-    to one path (or to one term) would miss its own
-    paired red's stealthier half, the mistake `kerberoasting-4769` was fixed for. Activity
-    Log is on by default, so this half needs no telemetry caveat.
+    to one path (or to one term) would miss its own paired red's stealthier half, the mistake
+    `kerberoasting-4769` was fixed for. Activity Log is on by default, so this half needs no
+    telemetry caveat.
 
   - **`azure-keyvault-secret-dump` ↔ `azure-keyvault-audit`** — bulk secret read, one
     identity draining the vault (`T1555.006` Cloud Secrets Management Stores, which names Key
