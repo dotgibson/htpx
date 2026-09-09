@@ -18,6 +18,19 @@ Add user-visible changes under `[Unreleased]`. To cut a release, move the
 `main`: `auto-tag.yml` sees the new top version, tags `vX.Y.Z`, and publishes a
 GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 
+## [Unreleased]
+
+### Changed
+
+- **`sync-fanout.yml` passes `client-id`, not the deprecated `app-id`, and reads the new
+  `FLEET_APP_CLIENT_ID` org variable (#119, dotfiles-core #831).** The pinned
+  `create-github-app-token` (v3.2.0) deprecates `app-id`, and the Offense sync mint passed
+  it. The variable is a **new** one because `FLEET_APP_ID` holds the App ID and the new
+  input wants the Client ID, a different value; the `if:` guard and the preflight's
+  `::error::` move in the same commit. Precondition: the org variable must exist before
+  this merges, or the preflight fails every fan-out until it does — loudly, which is the
+  half of the failure this repo gets.
+
 ## [v3.2.0] - 2026-09-03
 
 ### Added
