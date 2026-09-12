@@ -59,15 +59,15 @@ entry carries `attack: {tactic, techniques}`, `detection`, `event_ids`, `pair`.
    AWS, GCP, K8s, Okta, GWS, CI/CD, SaaS) are thin (one fragile pair) or absent
    relative to what the corpus claims to cover? Rank by how central the gap is, not
    by raw ATT&CK breadth. **`pair: null` is legitimate for a recon entry** (e.g.
-   `entries/red/smb-enum-nxc.md`) — never flag an intentionally-unpaired recon entry
+   `entries/red/gcp-enum-recon.md`) — never flag an intentionally-unpaired recon entry
    as a missing pair.
 5. **Detection quality / duplication.** Is a blue detection too broad (alert
    fatigue) or too brittle (trivially evaded)? Are two entries near-duplicates that
    should merge? Is a `source:` provenance stale or a claim unsupported — and does
    it credit **the toolkit the command actually shows**? (`device-code-phish`
    credited ROADtools for releases while running an AADInternals cmdlet.)
-6. **Red command correctness — nothing else in this repo reads it.** All 103 red
-   entries carry a fenced command block and no gate validates its contents: CI's
+6. **Red command correctness — nothing else in this repo reads it.** Every red
+   entry carries a fenced command block and no gate validates its contents: CI's
    checks are structural (pairing, slots, byte-drift, shell lint) and *projection is
    not the variable* — v2.8.1's `wmi-subscription` **was** projected and the
    byte-gate stayed green, because it asserts the flat view matches the entry, not
