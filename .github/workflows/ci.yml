@@ -40,3 +40,50 @@ jobs:
           u=$(comm -23 <(grep -rho '{{[a-z_]*}}' entries|sort -u) <(grep -o "'{{[a-z_]*}}'" htpx|tr -d "'"|sort -u))
           [ -z "$u" ] || { echo "UNHANDLED slots:"; echo "$u"; fail=1; }
           exit $fail
+      - name: ATT&CK tag agreement + shape
+        run: |
+          # Nothing else in this file reads attack.tactic / attack.techniques, so until
+          # now a typo'd or drifted tag reached the corpus unchallenged and the only
+          # check was the weekly /corpus-review LLM reading every entry by hand.
+          # #121 shows the failure mode: it reported "whole corpus" having diffed 102
+          # of 105 pairs. Deliberately offline — live ID validity stays the review's
+          # job, where a MITRE outage is a report line, not a red build on someone's PR.
+          fail=0
+          _tactic() { awk '/^---/{n++;next} n==1 && /^[[:space:]]+tactic:/{sub(/.*tactic:[[:space:]]*/,"");print;exit}' "$1"; }
+          _techs()  { awk '/^---/{n++;next} n==1 && /^[[:space:]]+techniques:/{sub(/.*techniques:[[:space:]]*/,"");gsub(/[][ ]/,"");print;exit}' "$1" | tr ',' '\n' | sort | paste -sd,; }
+          _id()     { awk -F': *' '/^---/{n++;next} n==1 && $1=="id"{print $2;exit}' "$1"; }
+          _shape() {
+            t=$(_tactic "$1"); k=$(_techs "$1")
+            case "$t" in
+              TA[0-9][0-9][0-9][0-9]) ;;
+              *) echo "BAD tactic: $2 -> '${t:-<missing>}'"; return 1 ;;
+            esac
+            [ -n "$k" ] || { echo "MISSING techniques: $2"; return 1; }
+            for x in $(echo "$k" | tr ',' ' '); do
+              echo "$x" | grep -qE '^T[0-9]{4}(\.[0-9]{3})?$' \
+                || { echo "BAD technique: $2 -> '$x'"; return 1; }
+            done
+          }
+          for f in entries/red/*.md entries/blue/*.md; do
+            _shape "$f" "$(_id "$f")" || fail=1
+          done
+          # Red drives the walk: every blue is the mate of exactly one red (the pairing
+          # gate above enforces that), so this visits each pair once.
+          pairs=0
+          for f in entries/red/*.md; do
+            id=$(_id "$f")
+            pair=$(awk -F': *' '/^---/{n++;next} n==1 && $1=="pair"{print $2;exit}' "$f")
+            if [ "$pair" = "null" ]; then continue; fi   # declared hole; pair_note: gate covers it
+            mate=$(grep -rl "^id: *$pair\$" entries | head -1)
+            [ -n "$mate" ] || continue                   # broken link; pairing gate already reports it
+            pairs=$((pairs + 1))
+            rt=$(_tactic "$f"); bt=$(_tactic "$mate")
+            rk=$(_techs "$f");  bk=$(_techs "$mate")
+            # _techs sorts, so [T1207, T1003.006] and [T1003.006, T1207] compare equal —
+            # order carries no meaning in these tags and must not fail the build.
+            [ "$rt" = "$bt" ] || { echo "TACTIC MISMATCH: $id ($rt) vs $pair ($bt)"; fail=1; }
+            [ "$rk" = "$bk" ] || { echo "TECHNIQUE MISMATCH: $id [$rk] vs $pair [$bk]"; fail=1; }
+          done
+          # Printed every run so a review quoting a different denominator is visibly wrong.
+          echo "ATT&CK tag agreement: $pairs pairs checked"
+          exit $fail
