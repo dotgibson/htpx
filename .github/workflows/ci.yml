@@ -44,7 +44,7 @@ jobs:
         run: |
           # Nothing else in this file reads attack.tactic / attack.techniques, so until
           # now a typo'd or drifted tag reached the corpus unchallenged and the only
-          # check was the weekly /corpus-review LLM reading all 211 entries by hand.
+          # check was the weekly /corpus-review LLM reading every entry by hand.
           # #121 shows the failure mode: it reported "whole corpus" having diffed 102
           # of 105 pairs. Deliberately offline — live ID validity stays the review's
           # job, where a MITRE outage is a report line, not a red build on someone's PR.
