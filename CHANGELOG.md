@@ -20,6 +20,29 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 
 ## [Unreleased]
 
+### Added
+
+- **CI now gates red↔blue ATT&CK tag agreement — the dimension nothing machine-checked**
+  (#121). `ci.yml` read `id`, `pair` and `{{slot}}` tokens, but never `attack.tactic` or
+  `attack.techniques`: a typo'd ID, or a retag applied to only one half of a pair, reached
+  the corpus unchallenged. The sole check was the weekly `/corpus-review` reading every
+  entry by hand, and #121 is what that costs — it was titled "103 pairs, whole corpus" and
+  said it had diffed "all 102 non-null pairs", against the **105** that existed when it
+  ran, so its completeness claim covered three pairs it never opened. The verdict happened
+  to survive a full re-diff (zero mismatches), but a review that miscounts its own
+  denominator can skip entries and still report "no findings." The new step asserts:
+  - **shape** — `tactic` matches `^TA[0-9]{4}$`, and every technique
+    `^T[0-9]{4}(\.[0-9]{3})?$`;
+  - **agreement** — each pair's red and blue carry an identical tactic and technique set,
+    compared order-insensitively, since order carries no meaning in these tags;
+  - **denominator** — it prints `ATT&CK tag agreement: N pairs checked` on every run, so a
+    future review quoting a different number is visibly wrong against the log.
+
+  Deliberately **offline**: it does not call `attack.mitre.org`. Live ID validity stays the
+  weekly review's job, where a MITRE outage or a revocation redirect is a report line rather
+  than a red build on an unrelated PR. Pure `bash`/`awk`, no `yq`, matching the gate
+  above it.
+
 ### Changed
 
 - **`sync-fanout.yml` passes `client-id`, not the deprecated `app-id`, and reads the new
