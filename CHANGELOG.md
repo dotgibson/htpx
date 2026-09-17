@@ -54,6 +54,38 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
   this merges, or the preflight fails every fan-out until it does — loudly, which is the
   half of the failure this repo gets.
 
+### Fixed
+
+- **README's corpus count is gated, and the weekly review must now count for itself**
+  (#124). `README.md` said "105 paired attack/detection concepts"; the corpus had **107**
+  — `6b659bb` added two pairs and left the number alone, as `b80741f` had before it
+  (90 → 102 in one jump). #124's `/corpus-review` took 105 from that prose, headlined
+  "whole corpus … clean bill", and never mentioned the four entries `6b659bb` added five
+  days earlier: two GCP pairs shipped unreviewed under a completeness claim. This is the
+  #121 failure repeating one gate later — `7f369ee` added the ATT&CK step that *prints*
+  `ATT&CK tag agreement: N pairs checked` precisely so a wrong denominator would be
+  visible, but nothing routed that number anywhere, so it was printed and ignored. The
+  review's ATT&CK verdict itself was re-verified against live MITRE and stands: the v19
+  `TA0112` / `T1685` / `T1686.001` cluster is correctly tagged and no retag was needed.
+  Four changes close the loop:
+  - **README** is corrected to 107, and its tactic list now names all thirteen tactics the
+    corpus covers — Initial Access, Execution, Command & Control and Impact were missing,
+    26 pairs' worth of coverage the prose disclaimed. macOS endpoint coverage is now
+    **declared out of scope** rather than left ambiguous, which is what made it read as an
+    undeclared hole in successive reviews.
+  - **`ci.yml`** asserts that number against `$pairs` *inside the step that already
+    computes it* — no second, divergent walk to drift out of sync — so the count cannot go
+    stale again, and a rewording that loses the phrase fails just as loudly as a wrong
+    number. The failure prints the exact `sed` to run.
+  - **`/corpus-review`** must now compute red / blue / pairs itself (`Bash(wc:*)`, the one
+    tool added), reconcile against CI's printed denominator, open every report with a
+    `Scope / Counted / Reviewed` header, say **SUBSET** whenever it read fewer pairs than
+    exist, and give a named verdict line to every entry added in the last 30 days.
+  - **`claude-routines.yml`** checks the corpus-review job out with `fetch-depth: 0`. Its
+    `Bash(git log:*)` grant had been inert since the job was written — a depth-1 clone sees
+    one commit — so the "added since the last review" list could not have worked without
+    this. The two release jobs already did it for the same reason.
+
 ## [v3.2.0] - 2026-09-03
 
 ### Added

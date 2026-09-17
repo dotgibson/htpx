@@ -40,7 +40,7 @@ jobs:
           u=$(comm -23 <(grep -rho '{{[a-z_]*}}' entries|sort -u) <(grep -o "'{{[a-z_]*}}'" htpx|tr -d "'"|sort -u))
           [ -z "$u" ] || { echo "UNHANDLED slots:"; echo "$u"; fail=1; }
           exit $fail
-      - name: ATT&CK tag agreement + shape
+      - name: ATT&CK tag agreement + shape + README count
         run: |
           # Nothing else in this file reads attack.tactic / attack.techniques, so until
           # now a typo'd or drifted tag reached the corpus unchallenged and the only
@@ -86,4 +86,24 @@ jobs:
           done
           # Printed every run so a review quoting a different denominator is visibly wrong.
           echo "ATT&CK tag agreement: $pairs pairs checked"
+          # ...and now asserted, because printing it was not enough. README's "N paired
+          # attack/detection concepts" line is what a reader -- and, it turned out, the weekly
+          # /corpus-review -- takes as the size of the corpus, and it is hand-maintained prose,
+          # so it goes stale the moment a pair lands without someone remembering to bump it.
+          # b80741f jumped it 90 -> 102 in one go; 6b659bb added two pairs and left it at 105.
+          # #124's review then read "105" off that line, called it the whole corpus, and handed
+          # a clean bill to four entries added five days earlier that it never opened. $pairs
+          # above is the real count, already computed by the walk this step does anyway -- this
+          # just makes the prose answer to it. A rewording that loses the phrase fails too: the
+          # number has to stay findable, or the next reader is quoting fiction.
+          _readme_count() { awk 'match($0, /[0-9]+ paired attack\/detection concepts/) { n = substr($0, RSTART); sub(/ .*/, "", n); print n; exit }' README.md; }
+          claimed=$(_readme_count)
+          if [ -z "$claimed" ]; then
+            echo "README COUNT MISSING: no 'N paired attack/detection concepts' line in README.md -- the corpus size must stay greppable. If you reworded that sentence, update the pattern in this step too."
+            fail=1
+          elif [ "$claimed" != "$pairs" ]; then
+            echo "README COUNT STALE: README.md claims $claimed pairs, entries/ has $pairs."
+            echo "  fix: sed -i 's/$claimed paired attack\/detection/$pairs paired attack\/detection/' README.md"
+            fail=1
+          fi
           exit $fail
