@@ -17,11 +17,11 @@ password to reset; a **fine-grained PAT** (granted/approved in an org) does the 
 across scoped repos. Both are non-interactive and easy to overlook among legitimate
 CI credentials. The deploy key writes `public_key.create`; a fine-grained PAT writes
 `personal_access_token.request_created` on request and
-`personal_access_token.request_approved` once an org admin grants it. (Cloud CI — no
+`personal_access_token.access_granted` once it's granted org access. (Cloud CI — no
 slots.)
 
 ```sh
 # add an attacker deploy key with write access (read_only=false = push, not just pull)
 gh api -X POST /repos/<owner>/<repo>/keys -f title='ci-cache' -f key="$(cat rogue.pub)" -F read_only=false
-# — or request/approve a fine-grained PAT in the org (personal_access_token.request_created / .request_approved)
+# — or request/approve a fine-grained PAT in the org (personal_access_token.request_created / .access_granted)
 ```
