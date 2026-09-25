@@ -56,6 +56,19 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 
 ### Fixed
 
+- **The npm and Slack 2FA-disable pairs were tagged as tool tampering, not an
+  authentication change** (#129, from #126 Finding 2). `npm-2fa-disable` /
+  `npm-2fa-audit` and `slack-2fa-disable` / `slack-2fa-audit` carried `T1685` (Disable or
+  Modify Tools), whose v19 scope is security *sensors* — EDR, AV, logging. Downgrading a
+  package's publish-2FA level or a workspace's enforced 2FA weakens an **authentication
+  requirement**, which is `T1556.006` (Modify Authentication Process: Multi-Factor
+  Authentication) — the tag the `okta-mfa-reset` pair already uses. Both halves of each
+  pair are retagged together, so the CI tag-agreement gate still passes. `T1556.006` maps
+  to `TA0112` in v19, so `tactic: TA0112` is unchanged; the detections already key on the
+  right events (`package.edit mfa=…`, `two_factor_required=false`), so this is a retag,
+  not a detection change. It narrows #124's verdict below that the `TA0112` / `T1685`
+  cluster needed no retag — these two pairs were the exception.
+
 - **Three GitHub blue detections keyed on audit-action strings GitHub never emits —
   they silently never fired** (#126, Finding 1). `gh-runner-audit` matched
   `action=self_hosted_runner.created`, `gh-cred-audit` matched
