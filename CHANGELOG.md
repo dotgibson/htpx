@@ -45,6 +45,20 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 
 ### Changed
 
+- **`T1685` on the branch-protection pairs is kept as a deliberate call, now noted in
+  the entries themselves (#133).** The weekly `/corpus-review` flagged `T1685` (Disable
+  or Modify Tools) as a weak semantic fit for `gh-branch-protection-off` ↔
+  `gh-branch-protection-audit` and `gl-protected-branch-off` ↔ `gl-protected-branch-audit`
+  — branch-protection tampering is a code-integrity / supply-chain control, not a
+  monitoring tool. But the tag is **valid and red/blue agree**, so CI never had cause to
+  fail: this was a judgment item, not a defect. Unlike the sibling 2FA case (#129 →
+  `T1556.006`), TA0112 offers no clean single replacement — ATT&CK v19 revoked
+  `T1562.001` into the `T1685` *parent*, whose "disrupt preventative mechanisms" scope
+  does cover removing a protection rule, and no v19 sub-technique fits more closely (the
+  same reasoning the v19 retag block below already recorded). Resolution: keep `T1685`,
+  and add an **ATT&CK note** to the two red entries so the decision is visible to the
+  next review — which reads entry bodies, not this changelog — instead of being
+  re-flagged each week.
 - **`sync-fanout.yml` passes `client-id`, not the deprecated `app-id`, and reads the new
   `FLEET_APP_CLIENT_ID` org variable (#119, dotfiles-core #831).** The pinned
   `create-github-app-token` (v3.2.0) deprecates `app-id`, and the Offense sync mint passed
