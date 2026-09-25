@@ -76,6 +76,18 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
   entry flags the exact PAT approval-event name for a final check against the current
   GitHub audit-events table.
 
+- **`T1685` → `T1556.006` on the two 2FA-disable pairs — a security-tool-tamper tag on an
+  authentication-control change** (#126, Finding 2). `npm-2fa-disable`↔`npm-2fa-audit` and
+  `slack-2fa-disable`↔`slack-2fa-audit` tagged the publish-2FA / workspace-2FA downgrade as
+  `T1685` (Disable or Modify Tools — the v19 renumber of T1562, scoped to EDR/AV/logging
+  sensors). The action weakens an authentication requirement, not a monitoring tool; the
+  correct technique is `T1556.006` (Modify Authentication Process: Multi-Factor
+  Authentication), which in v19 also maps to `TA0112`, so the existing `tactic: TA0112`
+  stays and only the technique ID moves. The detections already key on the right audit
+  events (`package.edit mfa=…`, `two_factor_required=false`) and are unchanged — a tagging
+  fix, not a detection fix. Both halves of each pair change together, so the red↔blue
+  agreement gate stays green.
+
 - **README's corpus count is gated, and the weekly review must now count for itself**
   (#124). `README.md` said "105 paired attack/detection concepts"; the corpus had **107**
   — `6b659bb` added two pairs and left the number alone, as `b80741f` had before it
