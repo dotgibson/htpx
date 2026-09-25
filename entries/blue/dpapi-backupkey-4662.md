@@ -25,12 +25,22 @@ calls from tooling that asks the DC to decrypt a masterkey live, such as
 `impacket-dpapi masterkey -t`. The *offline* decryption that follows either path
 is invisible, so this read is the only on-wire moment.
 
-The `4662` half only fires if DC object-access auditing covers the LSA secret
-objects. Before you trust silence from it, run the red command against a lab DC
-and confirm the event appears. The `5145` half needs detailed file-share auditing.
+This `4662` comes from `Object_Server=LSA`, not from the directory service, so it
+logs under Object Access > Other Object Access Events. Enabling DS Access alone
+won't produce it. (Needs Success auditing of the Other Object Access Events
+subcategory on the DCs. The `5145` half needs detailed file-share auditing.) The
+OTRF Security-Datasets recording of mimikatz `lsadump::backupkeys` against a DC,
+which makes the same `LsarRetrievePrivateData` calls as impacket, shows one event
+per secret read. That is about four per dump, each with
+`Object_Name=Policy\Secrets\G$BCKUPKEY_*` and Accesses "Query secret value". The
+same run's `5145`s are all `lsarpc`, with no `protected_storage`.
+
+`4662` carries no source IP. To get it, join its `Logon_ID` to the matching
+network-logon `4624`. Field names assume the classic `WinEventLog` sourcetype; on
+`XmlWinEventLog` they are `ObjectServer` / `ObjectType` / `ObjectName` / `AccessMask`.
 
 ```spl
-index=main (EventCode=4662 Object_Type="SecretObject" Access_Mask="0x2" Object_Name="*BCKUPKEY*")
+index=main (EventCode=4662 Object_Server="LSA" Object_Type="SecretObject" Access_Mask="0x2" Object_Name="*BCKUPKEY*")
     OR (EventCode=5145 Share_Name="*IPC$" Relative_Target_Name="protected_storage")
-| table _time, host, EventCode, Account_Name, Source_Address, Object_Name, Share_Name, Relative_Target_Name
+| table _time, host, EventCode, Account_Name, Logon_ID, Source_Address, Object_Name, Share_Name, Relative_Target_Name
 ```
