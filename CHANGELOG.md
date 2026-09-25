@@ -57,11 +57,11 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 ### Fixed
 
 - **Three GitHub blue detections keyed on audit-action strings GitHub never emits —
-  they silently never fired** (#126, Finding 1). `gh-runner-audit` matched
-  `action=self_hosted_runner.created`, `gh-cred-audit` matched
-  `repo.create_deploy_key` and `personal_access_token.access_granted` — none of which
-  are real GitHub audit-log actions, so the SPL never matched live telemetry and the
-  detections read as coverage while providing none. CI could not catch it: the ATT&CK
+  they silently never fired** (#126, Finding 1; #128). `gh-runner-audit` matched
+  `action=self_hosted_runner.created` and `gh-cred-audit` matched
+  `repo.create_deploy_key` — neither is a real GitHub audit-log action, so the SPL
+  never matched live telemetry and the detections read as coverage while providing
+  none (`gh-cred-audit` also missed the PAT *request* event). CI could not catch it: the ATT&CK
   gate checks tag agreement, not audit-action strings, and the paired red *prose*
   carried the same wrong strings, so nothing was inconsistent to flag. Retargeted to
   the documented events, in both the blue SPL and the matching red/blue prose:
@@ -70,11 +70,11 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
     three so org/enterprise-scope registration isn't dark;
   - deploy-key add → `public_key.create`;
   - fine-grained PAT → `personal_access_token.request_created` (request) and
-    `personal_access_token.request_approved` (grant — where durable access is minted).
+    `personal_access_token.access_granted` (grant — where durable access is minted).
+    An interim `personal_access_token.request_approved` was itself undocumented; the
+    grant event is pinned against GitHub's org and enterprise audit-event tables.
 
-  ATT&CK tags are unchanged; this is a detection-string fix, not a retag. The blue
-  entry flags the exact PAT approval-event name for a final check against the current
-  GitHub audit-events table.
+  ATT&CK tags are unchanged; this is a detection-string fix, not a retag.
 
 - **README's corpus count is gated, and the weekly review must now count for itself**
   (#124). `README.md` said "105 paired attack/detection concepts"; the corpus had **107**
