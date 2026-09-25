@@ -29,7 +29,7 @@ index=sysmon EventCode=22 QueryStatus!=0
 | eval label=mvindex(split(QueryName,"."),0), llen=len(label)
 | eval vowels=llen-len(replace(lower(label),"[aeiou]","")), vowel_ratio=vowels/llen
 | stats count as nxdomains, dc(QueryName) as uniq, avg(llen) as avg_len, avg(vowel_ratio) as avg_vowel by Image, host
-| where (nxdomains>50 AND avg_len>12 AND avg_vowel<0.3) OR uniq>200
+| where (nxdomains>=40 AND avg_len>12 AND avg_vowel<0.3) OR uniq>200
 | eval arm=if(avg_len>12 AND avg_vowel<0.3, "char-level", "volume")
 | sort - nxdomains
 ```
