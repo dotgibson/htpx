@@ -20,7 +20,17 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 
 ## [Unreleased]
 
+## [v3.3.0] - 2026-09-29
+
 ### Added
+
+- **Two GCP red↔blue pairs: compute execution and storage exfil** (#122, from #121).
+  - `gcp-gce-startup-script-exec` ↔ `gcp-gce-metadata-audit` (TA0002, `T1651`): guest code
+    runs as root through a metadata `startup-script`. It is detected from the GCP Admin
+    Activity audit log, a `setMetadata` carrying `startup-script` followed by a `reset`.
+  - `gcp-gcs-mass-exfil` ↔ `gcp-gcs-exfil-audit` (TA0009, `T1530`): bulk
+    `storage.objects.get` / `rewrite` against a bucket. It is detected by
+    `storage.objects.get` volume in the Data Access log.
 
 - **CI now gates red↔blue ATT&CK tag agreement — the dimension nothing machine-checked**
   (#121). `ci.yml` read `id`, `pair` and `{{slot}}` tokens, but never `attack.tactic` or
@@ -70,6 +80,41 @@ GitHub Release; `sync-fanout.yml` then opens the Offense sync PR.
 
 ### Fixed
 
+- **The DPAPI backup-key detection keys on the LSA secret read (4662); the blue entry is
+  renamed `dpapi-backupkey-5145` → `dpapi-backupkey-4662`** (#137, #142; fixes #131, refs
+  #140). The paired red command, `impacket-dpapi backupkeys`, never touches MS-BKRP or
+  `\pipe\protected_storage`. It calls `LsarRetrievePrivateData` (MS-LSAD) over
+  `\pipe\lsarpc` on the `G$BCKUPKEY_*` LSA secrets, so the old 5145-only detection could
+  not fire on it.
+  - The primary signal is now 4662 with `Object_Server="LSA"`, `SecretObject`, access mask
+    `0x2` and `*BCKUPKEY*`. The protected_storage 5145 stays as a secondary signal for the
+    MS-BKRP live-decrypt path.
+  - The audit prerequisite ("Other Object Access Events", not DS Access) and the field
+    names are pinned from the OTRF Security-Datasets recording of the same calls. The
+    table gains `Logon_ID`, because 4662 carries no source IP (join to 4624).
+  - The red entry's prose and `pair:` are corrected, and so is `smb-enum-5145`'s
+    cross-reference. Anything that links the old id must move to the new one.
+- **`dga-nxdomain-entropy` is scoped to character-level DGAs and gains an NXDOMAIN volume
+  arm** (#136, fixes #132). Its only gate was a vowel ratio below 0.3, which catches the
+  paired hex-label red but lets vowel-rich dictionary DGAs through, even though the entry
+  claimed general DGA coverage. Changes:
+  - The title says "label shape", not "entropy".
+  - A new `arm` field splits a high-fidelity character-level arm from a lower-fidelity
+    volume arm (more than 200 distinct NXDOMAINs, with no label-shape test).
+  - The character-level threshold drops from over 50 to 40 or more NXDOMAINs, so a single
+    run of the 50-domain red now trips it.
+  - The entry says plainly that real dictionary-DGA coverage needs a word-list or n-gram
+    lookup.
+- **Tool names and two operational caveats corrected** (#138, from #130).
+  - `printerbug` → `printerbug.py` (the impacket/Kali binary name) in
+    `unconstrained-deleg-tgt` and `coerce-petitpotam`.
+  - `ligolo-agent` → `agent` in `reverse-tunnel-chisel`.
+  - `dns-tunnel-sysmon-22` notes that its `parent_domain` rex assumes a two-label
+    registrable domain, so it mis-groups public suffixes such as `co.uk`.
+  - `cf-waf-disable` resends `action` and `expression`, because Cloudflare's per-rule
+    PATCH replaces the whole rule and does not honour a bare `{"enabled":false}`.
+
+  No frontmatter, pairing, slot or ATT&CK tag changes.
 - **The npm and Slack 2FA-disable pairs were tagged as tool tampering, not an
   authentication change** (#129, from #126 Finding 2). `npm-2fa-disable` /
   `npm-2fa-audit` and `slack-2fa-disable` / `slack-2fa-audit` carried `T1685` (Disable or
